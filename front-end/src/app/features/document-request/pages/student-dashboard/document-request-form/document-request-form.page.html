@@ -1,0 +1,600 @@
+<!-- [file name]: document-request-form.component.html -->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 ">
+  <div class="min-h-screen">
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+      <!-- Header -->
+      <div class="mb-6 sm:mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
+        <button pButton type="button" (click)="cancel()" icon="pi pi-arrow-left" label="Back"
+                severity="contrast" class="w-full my-auto sm:w-auto"></button>
+
+        <div class="w-full">
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 break-words">Document
+            Request Form</h1>
+          <p class="text-xs sm:text-sm text-gray-600">University of Baguio - Admissions and Records Center
+            (ARC)</p>
+        </div>
+      </div>
+
+      <!-- Form Container -->
+      <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6">
+        <!-- Student Information (Non-editable) -->
+        <div class="mb-6 sm:mb-8">
+          <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 border-b pb-2">Student
+            Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <label class="text-xs text-gray-500 block mb-1">Full Name</label>
+              <div class="font-medium text-black text-sm sm:text-base break-words">
+                {{ studentInfo.lastName }}, {{ studentInfo.firstName }} {{ studentInfo.middleName }}
+              </div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <label class="text-xs text-gray-500 block mb-1">Year Level</label>
+              <div class="font-medium text-black text-sm sm:text-base break-words">{{
+                getYearOrdinal(studentInfo.year ?? 1) }} Year</div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <label class="text-xs text-gray-500 block mb-1">Student ID</label>
+              <div class="font-medium text-black text-sm sm:text-base break-words">{{
+                studentInfo.studentId }}</div>
+            </div>
+            <!-- Add Course Info here if available from student details -->
+            @if (studentInfo.requestorCourseId) {
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <label class="text-xs text-gray-500 block mb-1">Program/Course</label>
+              <div class="font-medium text-black text-sm sm:text-base break-words">
+                {{ getCourseDisplayName(studentInfo.requestorCourseId) }} {{ "(" +
+                getCourseCode(studentInfo.requestorCourseId) + ")" }}
+              </div>
+            </div>
+            }
+          </div>
+          <p class="text-xs text-gray-500 mt-3 italic">Basic student information from your profile. Contact
+            details can be updated below.</p>
+        </div>
+
+        <!-- Editable Contact Information -->
+        <div class="mb-6 sm:mb-8">
+          <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 border-b pb-2">Contact
+            Information</h2>
+          <div class="grid grid-cols-1 gap-4 sm:gap-6">
+            <!-- Updated Contact Number field with +63 prefix -->
+            <div>
+              <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Contact Number
+                *</label>
+              <div class="flex">
+                <span
+                      class="inline-flex items-center px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 text-sm sm:text-base font-medium">
+                  +63
+                </span>
+                <input type="tel" [(ngModel)]="contactNoInput" (input)="validateContactNumber()"
+                       name="contactNoInput" placeholder="9123456789" maxlength="10"
+                       class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm sm:text-base"
+                       required />
+              </div>
+
+              <!-- Validation messages for contact number -->
+              @if (contactNoInput && contactNoInput.length > 0 && contactNoInput.length < 10) { <div
+                class="mt-1 text-xs text-amber-600">
+                <i class="pi pi-exclamation-triangle mr-1"></i>
+                Please enter a complete 10-digit mobile number
+            </div>
+            }
+            @if (contactNoInput && contactNoInput.length === 10) {
+            <div class="mt-1 text-xs text-green-600">
+              <i class="pi pi-check-circle mr-1"></i>
+              Valid Philippine mobile number format
+            </div>
+            }
+
+            <p class="text-xs text-gray-500 mt-1">Enter your 10-digit mobile number (e.g., 9123456789)</p>
+          </div>
+
+          <!-- Updated Email field with validation -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Email Address *</label>
+            <input type="email" [(ngModel)]="emailAddress" name="emailAddress"
+                   placeholder="your.email@gmail.com" (input)="emailAddress = emailAddress.trim()"
+                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm sm:text-base"
+                   [class.border-red-500]="emailAddress && !isValidEmail(emailAddress)"
+                   [class.border-green-500]="emailAddress && isValidEmail(emailAddress)" required />
+
+            <!-- Validation messages for email -->
+            @if (emailAddress && !isValidEmail(emailAddress)) {
+            <div class="mt-1 text-xs text-red-600">
+              <i class="pi pi-times-circle mr-1"></i>
+              Please enter a valid email address (e.g., name&#64;domain.com)
+            </div>
+            }
+            @if (emailAddress && isValidEmail(emailAddress)) {
+            <div class="mt-1 text-xs text-green-600">
+              <i class="pi pi-check-circle mr-1"></i>
+              Valid email format
+            </div>
+            }
+
+            <p class="text-xs text-gray-500 mt-1">Updates and notifications will be sent here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Program/Course Selection with Search -->
+      <div class="mb-6 sm:mb-8">
+        <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Program/Course *</label>
+
+        <div class="relative" #courseDropdown>
+          <input #courseInput type="text" [(ngModel)]="courseSearchTerm" (input)="filterCourses()"
+                 (focus)="onCourseInputFocus()" (blur)="onCourseInputBlur()" name="courseSearch"
+                 placeholder="Search for your program/course..."
+                 class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white text-sm sm:text-base"
+                 autocomplete="off" />
+
+          <!-- Course Dropdown -->
+          @if (showCourseDropdown && filteredCourseOptions.length > 0) {
+          <div
+               class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 sm:max-h-80 overflow-y-auto">
+            <div class="p-1.5 sm:p-2">
+              @for (course of filteredCourseOptions; track course.id) {
+              <div (mousedown)="selectCourse(course)"
+                   class="p-2 sm:p-3 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors"
+                   [class.bg-indigo-50]="selectedCourseId === course.id">
+                <div class="font-medium text-gray-900 text-sm sm:text-base">
+                  {{ toProperCase(course.description) }}
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Validation message if no course selected -->
+        @if (!selectedCourseId && (requestForm.submitted || requestForm.touched)) {
+        <div class="mt-1 text-sm text-red-600">
+          Please select your program/course
+        </div>
+        }
+
+        <p class="text-xs text-gray-500 mt-1">Search and select your current or completed program at
+          University of Baguio</p>
+      </div>
+
+      <!-- Document Request Form -->
+      <form (ngSubmit)="submitRequest()" #requestForm="ngForm">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 border-b pb-2">Document Request
+          Details</h2>
+
+        <div class="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-xl">
+          <label class="block text-red-900 font-bold mb-3 text-xs sm:text-sm uppercase tracking-widest">
+            Request Classification *
+          </label>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            @for (cat of categoryOptions; track cat.value) {
+            <div (click)="onCategoryChange(cat.value)"
+                 class="cursor-pointer p-4 rounded-lg border-2 transition-all flex flex-col items-center justify-center text-center gap-2"
+                 [class.border-red-700]="requestCategory === cat.value"
+                 [class.bg-white]="requestCategory === cat.value"
+                 [class.shadow-md]="requestCategory === cat.value"
+                 [class.border-gray-200]="requestCategory !== cat.value"
+                 [class.bg-gray-50]="requestCategory !== cat.value">
+
+              <i [class]="cat.icon" class="text-xl"
+                 [class.text-red-700]="requestCategory === cat.value"
+                 [class.text-gray-400]="requestCategory !== cat.value"></i>
+
+              <span class="font-bold text-xs uppercase tracking-wider"
+                    [class.text-red-800]="requestCategory === cat.value"
+                    [class.text-gray-500]="requestCategory !== cat.value">
+                {{ cat.label }}
+              </span>
+            </div>
+            }
+          </div>
+
+          @if (needsClearance) {
+          <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+            <i class="pi pi-info-circle text-amber-600 mt-0.5"></i>
+            <div>
+              <p class="text-[10px] font-black text-amber-900 uppercase tracking-tighter">Official Notice</p>
+              <p class="text-xs text-amber-800 leading-relaxed">
+                <strong>Clearance Initialized:</strong> This request requires clearance sign-off
+                from multiple departments. Processing will resume once all accountabilities are settled.
+              </p>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Document Type Selection (Tags Inside Input) -->
+        <div class="mb-6 sm:mb-8">
+          <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Select Document Type(s)
+            *</label>
+
+          <div class="relative" #documentDropdown>
+            <div [class.border-indigo-500]="documentInputFocused"
+                 [class.border-gray-300]="!documentInputFocused" [class.ring-2]="documentInputFocused"
+                 [class.ring-indigo-200]="documentInputFocused"
+                 class="w-full min-h-[52px] sm:min-h-[56px] px-2 sm:px-3 py-2 border rounded-lg bg-white flex flex-wrap items-center gap-1.5 sm:gap-2 cursor-text"
+                 (click)="onDocumentInputClick()">
+
+              @for (doc of selectedDocuments; track doc.id; let i = $index) {
+              <div
+                   class="inline-flex items-center bg-indigo-100 text-indigo-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium">
+                <span class="truncate max-w-[120px] sm:max-w-[150px]">{{ doc.description }}</span>
+                <button type="button" (click)="removeDocument(i, $event)"
+                        class="ml-1 text-indigo-600 hover:text-indigo-800">
+                  <i class="pi pi-times-circle text-xs"></i>
+                </button>
+              </div>
+              }
+
+              <input #documentInput type="text" [(ngModel)]="documentSearchTerm"
+                     (input)="filterDocuments()" (focus)="onDocumentInputFocus()"
+                     (blur)="onDocumentInputBlur()" (keydown)="onDocumentKeyDown($event)"
+                     name="documentSearch"
+                     placeholder="{{selectedDocuments.length === 0 ? 'Search documents...' : 'Add more...'}}"
+                     class="flex-grow min-w-[140px] sm:min-w-[200px] px-1 py-1.5 sm:py-2 outline-none border-0 focus:ring-0 text-sm sm:text-base"
+                     autocomplete="off" />
+            </div>
+
+            @if (showDocumentDropdown) {
+            <div
+                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 sm:max-h-80 overflow-y-auto">
+              <div class="p-1.5 sm:p-2">
+                @if (filteredDocuments.length > 0) {
+                <div class="space-y-1">
+                  @for (doc of filteredDocuments; track doc.id) {
+                  <div [class.bg-indigo-50]="isDocumentSelected(doc)"
+                       (click)="addDocumentFromSearch(doc)"
+                       class="p-2 sm:p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div class="flex items-start">
+                        <div class="min-w-0 flex-1">
+                          <div
+                               class="font-medium text-gray-900 text-sm sm:text-base break-words">
+                            {{ doc.description }}</div>
+                          <div class="text-xs sm:text-sm text-gray-500 mt-1 break-words">
+                            <!-- Format processing period -->
+                            @if (doc.processingPeriod === 0) {
+                            Same day
+                            } @else if (doc.processingPeriod === 1) {
+                            1 working day
+                            } @else {
+                            {{ doc.processingPeriod }} working days
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-right sm:text-left sm:flex-shrink-0">
+                        <div class="font-bold text-indigo-700 text-sm sm:text-base">₱{{
+                          doc.fee }}</div>
+                        <div class="text-xs text-gray-500 mt-1 capitalize break-words">{{
+                          doc.category }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  }
+                </div>
+                } @else {
+                <div class="p-3 sm:p-4 text-center text-gray-500 text-sm sm:text-base">
+                  No documents found. Try a different search term.
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <p class="text-xs text-gray-500 mt-1 break-words">
+            @if (selectedDocuments.length > 0) {
+            {{ selectedDocuments.length }} document(s) selected. Click tags to remove.
+            } @else {
+            Select one or more document types (no duplicates allowed)
+            }
+          </p>
+        </div>
+
+        <!-- Quantity -->
+        <div class="mb-6 sm:mb-8">
+          <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Quantity (per document)
+            *</label>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <input type="number" [(ngModel)]="quantity" name="quantity" min="1" max="10"
+                   (change)="onQuantityChange()"
+                   class="w-full sm:w-24 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base" />
+            <span class="text-xs sm:text-sm text-gray-600">Maximum 10 copies per document</span>
+          </div>
+        </div>
+
+        <!-- Purpose of Request (Multiple Selection) -->
+        <div class="mb-6 sm:mb-8">
+          <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Purpose of Request
+            *</label>
+
+          <div class="relative" #purposeDropdown>
+            <div [class.border-indigo-500]="purposeInputFocused"
+                 [class.border-gray-300]="!purposeInputFocused" [class.ring-2]="purposeInputFocused"
+                 [class.ring-indigo-200]="purposeInputFocused"
+                 class="w-full min-h-[52px] sm:min-h-[56px] px-2 sm:px-3 py-2 border rounded-lg bg-white flex flex-wrap items-center gap-1.5 sm:gap-2 cursor-text"
+                 (click)="onPurposeInputClick()">
+
+              @for (purposeItem of selectedPurposesList; track purposeItem; let i = $index) {
+              <div
+                   class="inline-flex items-center bg-green-100 text-green-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium">
+                <span class="truncate max-w-[150px] sm:max-w-[200px]">{{ purposeItem }}</span>
+                <button type="button" (click)="removePurpose(i, $event)"
+                        class="ml-1 text-green-600 hover:text-green-800">
+                  <i class="pi pi-times-circle text-xs"></i>
+                </button>
+              </div>
+              }
+
+              <input #purposeInput type="text" [(ngModel)]="purposeSearchTerm" (input)="filterPurposes()"
+                     (focus)="onPurposeInputFocus()" (blur)="onPurposeInputBlur()"
+                     (keydown)="onPurposeKeyDown($event)" name="purposeSearch"
+                     placeholder="{{selectedPurposesList.length === 0 ? 'Search or type custom purpose...' : 'Add more...'}}"
+                     class="flex-grow min-w-[140px] sm:min-w-[200px] px-1 py-1.5 sm:py-2 outline-none border-0 focus:ring-0 text-sm sm:text-base"
+                     autocomplete="off" />
+            </div>
+
+            @if (showPurposeDropdown && (purposeSearchTerm || filteredPurposes.length > 0)) {
+            <div
+                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 sm:max-h-80 overflow-y-auto">
+              <div class="p-1.5 sm:p-2">
+                @if (filteredPurposes.length > 0) {
+                <div class="space-y-1">
+                  @for (purposeOption of filteredPurposes; track purposeOption) {
+                  <div [class.bg-green-50]="isPurposeSelected(purposeOption)"
+                       (click)="addPurposeFromDropdown(purposeOption)"
+                       class="p-2 sm:p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors flex items-center text-sm sm:text-base">
+
+                    @if (purposeOption.startsWith('Add custom: ')) {
+                    <div class="flex items-center min-w-0">
+                      <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-500 mr-1.5 sm:mr-2 flex-shrink-0"
+                           fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z"
+                              clip-rule="evenodd" />
+                      </svg>
+                      <span class="text-blue-600 break-words">{{ purposeOption }}</span>
+                    </div>
+                    } @else {
+                    <span class="break-words">{{ purposeOption }}</span>
+                    }
+                    @if (isPurposeSelected(purposeOption)) {
+                    <i class="pi pi-check ml-auto text-green-600"></i>
+                    }
+                  </div>
+                  }
+                </div>
+                } @else {
+                <div class="p-3 sm:p-4 text-center text-gray-500 text-sm sm:text-base">
+                  Type to create a custom purpose, then press Enter
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <p class="text-xs text-gray-500 mt-1 break-words">
+            @if (selectedPurposesList.length > 0) {
+            {{ selectedPurposesList.length }} purpose(s) selected. Click tags to remove. Stored as: "{{
+            purpose }}"
+            } @else {
+            Select multiple purposes or type custom purposes and press Enter
+            }
+          </p>
+        </div>
+
+        <!-- Estimated Claim Date -->
+        <div class="mb-6 sm:mb-8">
+          <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Estimated Claim
+            Date</label>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            @if (selectedDocuments.length > 0) {
+            <div class="relative w-full sm:w-auto">
+              <div class="relative">
+                <input type="date" [(ngModel)]="estimatedClaimDate" name="estimatedClaimDate" readonly
+                       class="w-full sm:w-64 px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm sm:text-base text-gray-700 pr-3" />
+                <i
+                   class="pi pi-calendar absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+            <div class="text-xs sm:text-sm text-gray-600">
+              Based on the longest processing time among selected documents
+            </div>
+            } @else {
+            <div class="text-xs sm:text-sm text-gray-600">
+              Select documents to see estimated date
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Price Summary -->
+        <div
+             class="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+          <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Payment Summary</h3>
+
+          @if (selectedDocuments.length > 0) {
+          <div class="mb-4">
+            <h4 class="font-medium text-gray-700 mb-2 text-sm sm:text-base">Selected Items:</h4>
+            <div class="space-y-4">
+              @for (doc of selectedDocuments; track doc.id) {
+              <div class="flex flex-col py-2 border-b border-gray-200">
+                <!-- Document Header -->
+                <div
+                     class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-0 mb-2">
+                  <div class="flex-1">
+                    <span class="text-gray-900 font-medium text-sm sm:text-base break-words">
+                      {{ doc.description || doc.name }}
+                    </span>
+                    <span class="text-xs text-gray-500 ml-2">({{ doc.category }})</span>
+                  </div>
+                  <div class="text-left sm:text-right">
+                    <div class="font-medium text-black text-sm sm:text-base">
+                      Total: ₱{{ calculateDocumentTotal(doc, quantity).toFixed(2) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Processing Period -->
+                <div class="text-xs text-gray-500 mb-2">
+                  @if (doc.processingPeriod === 0) {
+                  Same day processing
+                  } @else if (doc.processingPeriod === 1) {
+                  1 working day
+                  } @else {
+                  {{ doc.processingPeriod }} working days
+                  @if (doc.processingPeriod === 15) { (approx. 3 weeks) }
+                  }
+                </div>
+
+                <!-- Special Notes for Documents -->
+                @if (isFirstCopyDocument(doc) || isCAVDocument(doc)) {
+                <div class="mt-2 text-xs">
+                  @if (isFirstCopyDocument(doc)) {
+                  <div class="text-amber-600 bg-amber-50 p-2 rounded">
+                    <i class="pi pi-info-circle mr-1"></i>
+                    {{ getDocumentFeeNote(doc) }}
+                    @if (quantity > 1) {
+                    <div class="mt-1">
+                      <span class="font-medium">Current: </span>
+                      {{ quantity - 1 }} succeeding copy(ies) × ₱{{
+                      getSucceedingCopyFee(doc).toFixed(2) }} =
+                      ₱{{ ((quantity - 1) * getSucceedingCopyFee(doc)).toFixed(2) }}
+                    </div>
+                    }
+                  </div>
+                  }
+
+                  @if (isCAVDocument(doc)) {
+                  <div class="text-blue-600 bg-blue-50 p-2 rounded">
+                    <i class="pi pi-info-circle mr-1"></i>
+                    {{ getDocumentFeeNote(doc) }}
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+              }
+
+              <!-- Summary Note for First Copy Documents -->
+              @if (hasFirstCopyDocument()) {
+              <div class="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
+                <i class="pi pi-check-circle mr-1"></i>
+                <span class="font-semibold">First Copy Benefit:</span> For Diploma, OTR, and SF10,
+                the first copy is free. Additional copies are charged at standard rates.
+              </div>
+              }
+
+              <!-- Summary Note for CAV -->
+              @if (hasCAVDocument()) {
+              <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                <i class="pi pi-info-circle mr-1"></i>
+                <span class="font-semibold">CAV Note:</span> The calculated fee of ₱150.00 per copy
+                is the base rate.
+                Final fee may range from ₱150.00 to ₱275.00 depending on your program and
+                destination.
+                Final assessment will be made by the ARC.
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Total Calculation -->
+          <div
+               class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-4 border-t border-gray-300">
+            <div>
+              <h3 class="font-bold text-gray-900 text-sm sm:text-base">Total Amount Due</h3>
+              <p class="text-xs text-gray-600">All fees included</p>
+            </div>
+            <div class="text-left sm:text-right">
+              <div class="text-2xl sm:text-3xl font-bold text-indigo-700 break-words">
+                ₱{{ calculatedPrice.toFixed(2) }}
+              </div>
+              <p class="text-xs text-gray-600 mt-1">
+                {{ selectedDocuments.length }} document(s) × {{ quantity }} copy(ies)
+              </p>
+            </div>
+          </div>
+
+          <!-- Zero Fee Document Summary -->
+          @if (hasFirstCopyDocument() && quantity > 1) {
+          <div class="mt-3 text-xs text-gray-500 border-t border-gray-200 pt-3">
+            <div class="font-medium mb-1">First Copy Summary:</div>
+            @for (doc of getFirstCopyDocuments(); track doc.id) {
+            <div class="flex justify-between items-center py-1">
+              <span>{{ doc.description || doc.name }}</span>
+              <div class="text-right">
+                <div>1st copy: <span class="text-green-600">₱0.00</span></div>
+                <div>{{ quantity - 1 }} succeeding: <span class="text-amber-600">₱{{ ((quantity - 1)
+                    * getSucceedingCopyFee(doc)).toFixed(2) }}</span></div>
+                <div class="font-medium">Total: ₱{{ calculateDocumentTotal(doc, quantity).toFixed(2)
+                  }}</div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4 pt-6 border-t">
+          <button pButton type="button" (click)="cancel()" label="Cancel" severity="contrast"
+                  class="w-full sm:w-auto"></button>
+          <button pButton type="submit" [disabled]="!isFormValid()" [loading]="isSubmitting"
+                  class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 border-indigo-600">
+            @if (isSubmitting) {
+            Submitting...
+            } @else {
+            <i class="pi pi-check mr-2"></i>
+            Submit Request
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Processing Information -->
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+      <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Important Information</h3>
+      <div class="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-600">
+        <div class="flex items-start">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0"
+               fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+          </svg>
+          <span class="break-words"><strong>Payment:</strong> Processing begins only after payment
+            confirmation. Payment instructions will be sent to your email.</span>
+        </div>
+        <div class="flex items-start">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0"
+               fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+          </svg>
+          <span class="break-words"><strong>Claiming:</strong> Please bring your valid ID and request
+            confirmation when claiming documents at the ARC office.</span>
+        </div>
+        <div class="flex items-start">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0"
+               fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+          </svg>
+          <span class="break-words"><strong>Contact:</strong> For inquiries, contact ARC at
+            ub&#64;e.ubaguio.edu or (074) 442-3036, Monday-Friday, 8:00 AM - 5:00 PM.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

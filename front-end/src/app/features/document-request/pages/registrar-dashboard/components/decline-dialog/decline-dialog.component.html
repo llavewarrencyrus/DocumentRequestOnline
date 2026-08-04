@@ -1,0 +1,27 @@
+<div class="flex flex-col gap-4 p-2 ">
+  <div class="text-center">
+    <i class="pi pi-exclamation-triangle text-4xl text-rose-500 mb-3"></i>
+    <h3 class="text-lg font-semibold text-slate-900">
+      Decline Request #<span class="font-mono font-bold text-red-700">{{ selectedRequest().id }}</span>
+    </h3>
+    <p class="text-sm text-slate-500 mt-1">
+      Please provide a reason for declining this request.
+    </p>
+  </div>
+
+  <div class="field">
+    <label
+           for="declineReason"
+           class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
+      Reason for Decline <span class="text-rose-500">*</span>
+    </label>
+    <textarea
+              id="declineReason"
+              [(ngModel)]="declineReason"
+              (ngModelChange)="onReasonChange()"
+              rows="4"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              placeholder="Enter the reason why this request is being declined...">
+    </textarea>
+  </div>
+</div>

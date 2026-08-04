@@ -1,0 +1,228 @@
+<!-- Main Table Card -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <!-- Filters Section -->
+  <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div class="w-full">
+        <app-table-filters
+                           [(search)]="searchInput"
+                           [(select)]="selectItems"
+                           [(date)]="dates"
+                           (onFilter)="onFilterChange($event)" />
+      </div>
+      <div class="flex items-center w-full lg:w-auto">
+        <button
+                pButton
+                icon="pi pi-refresh"
+                (click)="onRefresh()"
+                class="p-button-text p-button-secondary !rounded-xl"
+                pTooltip="Refresh data"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <p-table
+           #dt
+           [value]="requests()"
+           [lazy]="true"
+           (onLazyLoad)="onPageChange($event)"
+           [paginator]="true"
+           [rows]="pageSize()"
+           [first]="(currentPage() - 1) * pageSize()"
+           [totalRecords]="totalItems()"
+           sortField="dateRequested"
+           [sortOrder]="-1"
+           [loading]="isLoading()"
+           [showCurrentPageReport]="true"
+           responsiveLayout="stack"
+           breakpoint="960px"
+           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
+           [rowsPerPageOptions]="[10, 25, 50]"
+           styleClass="p-datatable-hoverable-rows">
+    <ng-template pTemplate="sorticon" field="col.field" let-sortOrder>
+      <app-sorticon [sortOrder]="sortOrder" />
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr class="!bg-transparent">
+        <th pSortableColumn="id">
+          <div class="flex items-center gap-2">
+            ID <p-sortIcon field="id"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="requestorLastName">
+          <div class="flex items-center gap-1">
+            <span class="overflow-hidden whitespace-nowrap">Student Details</span>
+            <p-sortIcon field="requestorLastName"></p-sortIcon>
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center gap-1">Documents</div>
+        </th>
+        <th>
+          <div class="flex items-center gap-1">Receipt</div>
+        </th>
+        <th pSortableColumn="dateRequested">
+          <div class="flex items-center gap-1">
+            <span class="overflow-hidden whitespace-nowrap">Requested On</span>
+            <p-sortIcon field="dateRequested"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="status">
+          <div class="flex items-center justify-center gap-1">
+            Status <p-sortIcon field="status"></p-sortIcon>
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center justify-end gap-1">Actions</div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-request>
+      <tr
+          id="request-row-{{ request.id }}"
+          class="group transition-colors hover:bg-slate-50/80 context-menu-target"
+          (click)="onViewDetails(request)"
+          (contextmenu)="onContextMenu($event, request)">
+        <td>
+          <span
+                class="px-2 py-1 bg-rose-100 text-rose-700 rounded text-xs font-mono font-bold border border-slate-200">
+            #{{ request.id }}
+          </span>
+        </td>
+        <td>
+          <div class="flex flex-col">
+            <span class="font-bold text-slate-900">{{
+              requestService.getStudentFullName(request)
+              }}</span>
+            <span class="text-xs text-slate-500">{{
+              request.studentId
+              }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex flex-col gap-1">
+            <span
+                  class="text-sm text-slate-700 truncate max-w-[400px]"
+                  [pTooltip]="request.documentsDisplayName">
+              {{ request.documentsDisplayName || "" }}
+            </span>
+            <span
+                  class="text-[10px] font-bold text-rose-500 uppercase tracking-tighter">
+              {{ request.quantity }} COPY/IES
+            </span>
+          </div>
+        </td>
+        <td>
+          <div class="flex items-center">
+            @if (request.hasReceipt) {
+            <span
+                  (click)="onViewReceipt(request, $event)"
+                  class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs cursor-pointer hover:bg-emerald-100 transition-colors"
+                  [pTooltip]="'Click to view receipt(s)'">
+              <i class="pi pi-check-circle text-emerald-500"></i>
+              Uploaded
+            </span>
+            } @else {
+            <span
+                  class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-500 rounded-full text-xs">
+              <i class="pi pi-times-circle text-slate-400"></i>
+              None
+            </span>
+            }
+          </div>
+        </td>
+        <td>
+          <div class="text-sm text-slate-600">
+            <i class="pi pi-calendar text-[10px] mr-1"></i>
+            {{ request.dateRequested | date: "mediumDate" }}
+          </div>
+        </td>
+        <td class="text-center">
+          <span
+                [class]="
+            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' +
+            requestService.getStatusColor(request.status)
+          ">
+            <span
+                  [class]="
+              'w-1.5 h-1.5 rounded-full mr-1.5 ' +
+              getStatusDot(request.status)
+            "></span>
+            {{ requestService.getStatusLabel(request.status) }}
+          </span>
+        </td>
+        <td class="text-right">
+          <div class="flex justify-end gap-1">
+            <!-- Desktop: 3-dot menu -->
+            <button
+                    pButton
+                    icon="pi pi-ellipsis-v"
+                    (click)="$event.stopPropagation(); openMenu($event, request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-slate-600 hidden md:block"
+                    pTooltip="Actions"
+                    type="button"></button>
+            <!-- Mobile: Inline buttons -->
+            @if (request.hasReceipt) {
+            <button
+                    pButton
+                    icon="pi pi-file-pdf"
+                    (click)="onViewReceipt(request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-blue-600 md:hidden"
+                    pTooltip="View Receipt"></button>
+            }
+            @if (request.status === 'Pending') {
+            <button
+                    pButton
+                    icon="pi pi-trash"
+                    (click)="onDeclineRequest(request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-red-600 md:hidden"
+                    pTooltip="Decline"></button>
+            <button
+                    pButton
+                    icon="pi pi-check"
+                    (click)="onApproveRequest(request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-emerald-600 md:hidden"
+                    pTooltip="Approve"></button>
+            }
+            @if(request.status === 'Pending' && !request.hasReceipt){
+            <button pButton icon="pi pi-pencil" (click)="onEditDocuments(request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-rose-600 md:hidden"
+                    pTooltip="Edit Documents"></button>
+            }
+            <button
+                    pButton
+                    icon="pi pi-info-circle"
+                    (click)="onViewDetails(request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-slate-600 md:hidden"
+                    pTooltip="View details"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">
+          <div
+               class="flex flex-col items-center justify-center py-12 text-slate-400">
+            <i class="pi pi-filter text-5xl mb-4 opacity-20"></i>
+            <p class="text-lg font-medium text-slate-600">
+              No matching requests
+            </p>
+            <p class="text-sm">
+              Try adjusting your filters or search terms.
+            </p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Context Menu -->
+<p-contextMenu #rowContextMenu [model]="contextMenuItems"></p-contextMenu>
+
+<!-- Action Menu (3-dot menu) -->
+<p-menu #actionMenu [model]="menuItems" [popup]="true"></p-menu>

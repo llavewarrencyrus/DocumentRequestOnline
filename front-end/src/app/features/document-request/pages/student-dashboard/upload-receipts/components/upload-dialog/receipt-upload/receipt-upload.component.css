@@ -1,0 +1,12 @@
+.upload-area {
+    transition: all 0.2s ease;
+}
+
+.upload-area:hover {
+    border-color: #f43f5e;
+    background-color: #fff1f2;
+}
+
+:host ::ng-deep .progress-bar .p-progressbar-value {
+    background: #f43f5e;
+}

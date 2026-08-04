@@ -1,0 +1,12 @@
+<p-dialog [visible]="isVisible()"
+          header="Clearance Details"
+          (visibleChange)="onClose()"
+          [style]="{ width: '90vw', maxWidth: '800px' }"
+          [draggable]="false"
+          [resizable]="false"
+          [modal]="true"
+          class="clearance-details-dialog">
+
+  <clearance-details [request]="request()" />
+
+</p-dialog>

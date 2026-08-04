@@ -1,0 +1,36 @@
+<div class="flex flex-col gap-4">
+  @if (loading()) {
+  <div class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+  } @else if (link()) {
+  <div class="flex flex-col gap-3">
+    <p class="text-slate-600">
+      {{ description() }}
+    </p>
+
+    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+      <div class="flex items-center gap-2">
+        <input
+               type="text"
+               [value]="link()"
+               readonly
+               class="flex-1 bg-transparent border-none text-sm font-mono text-slate-700 focus:outline-none"
+               style="min-width: 0;">
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <p class="text-xs text-slate-500 text-center">
+        Generating a new link will invalidate the previous one.
+      </p>
+    </div>
+  </div>
+  } @else {
+  <div class="flex flex-col gap-3">
+    <p class="text-slate-600">
+      No {{ title().toLowerCase() }} has been generated yet.
+    </p>
+  </div>
+  }
+</div>

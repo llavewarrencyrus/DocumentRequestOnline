@@ -1,0 +1,255 @@
+<header
+        class="sticky md:static bg-white top-0 z-50 w-full border-b surface-border bg-surface-0 dark:bg-surface-900 shadow-sm">
+  <div id="wrapper" class="mx-auto flex h-16 items-center justify-between"
+       [ngClass]="currentUser?.role !== 'Student' ? 'max-w-8xl px-8 md:px-16' : 'max-w-6xl px-4 md:px-8'">
+    <!-- Left side: Logo/Brand -->
+    <div class="flex items-center space-x-2 sm:space-x-6">
+      <div class="flex items-center space-x-3">
+        <div>
+          @if (isLoggedIn() && currentUser) {
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+            <h1
+                class="text-base sm:text-lg font-semibold text-surface-900 dark:text-surface-0 leading-tight truncate max-w-[160px] sm:max-w-none animate-slideInLeft">
+              {{ getWelcomeMessage() }}
+            </h1>
+            <p-tag [value]="getUserRoleBadge()"
+                   [severity]="currentUser.role === 'Admin' ? 'danger' : (currentUser.role === 'Registrar' ? 'info' : 'success')"
+                   class="w-fit hidden md:block scale-90 origin-left animate-fadeIn"></p-tag>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side: Actions and User Menu -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Quick Actions -->
+      @if (isLoggedIn()) {
+      <div class="flex items-center space-x-2">
+        <!-- Notification Button with Popover -->
+        <p-overlayPanel #notificationPanel
+                        styleClass="w-full sm:w-96 max-w-[calc(100vw-32px)] sm:max-w-none notification-panel"
+                        (onShow)="onNotificationPanelShow()">
+          <ng-template pTemplate="content">
+            <div class="flex flex-col max-h-[70vh] sm:max-h-[400px] animate-slideInDown">
+              <!-- Notifications Header -->
+              <div class="flex items-center justify-between p-3 sm:p-4 border-b surface-border">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base sm:text-lg font-semibold text-surface-900 dark:text-surface-0">
+                    Notifications
+                    @if (connectionStatus !== 'connected') {
+                    <span class="ml-2 text-xs font-normal">
+                      @if (connectionStatus === 'connecting') {
+                      <i class="pi pi-spin pi-spinner text-warning-500"></i>
+                      } @else {
+                      <i class="pi pi-exclamation-triangle text-danger-500"></i>
+                      }
+                    </span>
+                    }
+                  </h3>
+                </div>
+
+
+                <!-- Mark All as Read Text Button (only show when there are unread notifications) -->
+
+
+                <!-- PrimeNG SelectButton Filter -->
+                <p-selectButton [options]="filterOptions" [unselectable]="true"
+                                [(ngModel)]="activeFilter" (onChange)="onFilterChange($event)" optionLabel="label"
+                                optionValue="value" [allowEmpty]="false" styleClass="sm:text-sm text-xs">
+                </p-selectButton>
+              </div>
+              <div class="flex justify-end">
+                @if (notificationCount > 0) {
+                <button pButton pRipple label="Mark all as read" [text]="true" size="small"
+                        (click)="markAllNotificationsAsRead()"
+                        class="text-xs sm:text-sm hover:scale-105 transition-transform duration-200"></button>
+                }
+
+              </div>
+
+              <!-- Notifications List with Infinite Scroll -->
+              <div class="flex-1 overflow-y-auto notification-list-container" (scroll)="onScroll($event)">
+                @if (filteredNotifications.length === 0) {
+                <div class="flex flex-col items-center justify-center p-8 text-center animate-scaleIn">
+                  <i class="pi pi-bell text-4xl text-surface-400 mb-3 animate-bounceSoft"></i>
+                  <p class="text-surface-600 dark:text-surface-300">No notifications yet</p>
+                  <p class="text-sm text-surface-500 mt-1">
+                    @if (activeFilter === 'unread') {
+                    You have no unread notifications
+                    } @else {
+                    You're all caught up!
+                    }
+                  </p>
+                </div>
+                } @else {
+                <div class="divide-y divide-surface-200 dark:divide-surface-700">
+                  @for (notification of filteredNotifications; track notification.id) {
+                  <div class="p-3 sm:p-4 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer transition-all duration-300 ease-in-out"
+                       [class.bg-surface-50]="!notification.read"
+                       (click)="onNotificationClick(notification, $event)">
+                    <div class="flex items-start gap-2 sm:gap-3">
+                      <!-- Notification Icon -->
+                      <div class="shrink-0 relative">
+                        <i [class]="getNotificationIcon(notification)" [ngClass]="{
+                      'text-surface-400': notification.read,
+                      'text-success-500': !notification.read && notification.type === 'REQUEST_APPROVED',
+                      'text-danger-500': !notification.read && notification.type === 'REQUEST_DECLINED',
+                      'text-info-500': !notification.read && notification.type === 'REQUEST_CREATED',
+                      'text-warning-500': !notification.read && notification.type === 'CLAIM_DATE_SET'
+                    }" class="text-base sm:text-lg transition-all duration-300"></i>
+                        @if (!notification.read) {
+                        <span
+                              class="absolute -top-1 -right-1 h-2 w-2 bg-primary-500 rounded-full animate-ping"></span>
+                        }
+                      </div>
+
+                      <!-- Notification Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2">
+                          <h4
+                              class="font-medium text-surface-900 dark:text-surface-0 truncate text-sm sm:text-base">
+                            {{ notification.title }}
+                          </h4>
+                        </div>
+                        <p
+                           class="text-xs sm:text-sm text-surface-600 dark:text-surface-300 mt-1 line-clamp-2">
+                          {{ notification.message }}
+                        </p>
+                        <div class="flex items-center justify-between mt-2">
+                          <span class="text-xs text-surface-500">
+                            {{ getNotificationTime(notification) }}
+                          </span>
+                          @if (notification.data.requestNumber) {
+                          <span class="text-xs text-surface-400">
+                            #{{ notification.data.requestNumber }}
+                          </span>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Mark as Read Button -->
+                      @if (!notification.read) {
+                      <button pButton pRipple icon="pi pi-check" [text]="true" size="small"
+                              class="shrink-0 hover:rotate-12 transition-all duration-300"
+                              (click)="markNotificationAsRead(notification.id, $event)"
+                              pTooltip="Mark as read"></button>
+                      }
+                    </div>
+                  </div>
+                  }
+
+                  <!-- Loading Indicator -->
+                  @if (loading$ | async) {
+                  <div class="p-4 text-center">
+                    <i class="pi pi-spin pi-spinner text-primary-500"></i>
+                    <span class="ml-2 text-sm text-surface-500">Loading more notifications...</span>
+                  </div>
+                  }
+
+                  <!-- End of List Message -->
+                  @if (!(hasMore$ | async) && filteredNotifications.length > 0) {
+                  <div class="p-4 text-center text-sm text-surface-400">
+                    <i class="pi pi-check-circle mr-1"></i>
+                    You've reached the end
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+          </ng-template>
+        </p-overlayPanel>
+
+        <div class="relative">
+          <button pButton pRipple icon="pi pi-bell" [rounded]="true" [text]="true" severity="secondary"
+                  pTooltip="Notifications" tooltipPosition="bottom"
+                  class="relative h-9 w-9 sm:h-10 sm:w-10 hover:rotate-12 transition-all duration-300 hover:bg-surface-200 dark:hover:bg-surface-700"
+                  (click)="notificationPanel.toggle($event)">
+          </button>
+          @if (notificationCount > 0) {
+          <p-badge [value]="notificationCount" severity="danger"
+                   class="absolute -top-1 -right-1 animate-scaleIn"></p-badge>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- User Profile Section -->
+      <div class="p-0 md:pl-3">
+        @if (isLoggedIn() && currentUser) {
+        <!-- Logged In User -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="hidden sm:block text-right">
+            <p class="text-sm font-medium text-surface-900 dark:text-surface-0">
+              {{ getUserDisplayName() }}
+            </p>
+            <p class="text-xs text-surface-500">
+              @if (getStudentId()) {
+              <span>{{ getStudentId() }}</span>
+              } @else if (currentUser.role === 'Registrar') {
+              <span>Registrar</span>
+              }
+            </p>
+          </div>
+
+          <!-- User Menu -->
+          <div class="flex items-center gap-2">
+            <p-avatar [label]="getUserInitials()"
+                      styleClass="bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-100"
+                      size="normal" shape="circle">
+            </p-avatar>
+
+            <button pButton pRipple icon="pi pi-sign-out" label="Logout" severity="secondary" [text]="true"
+                    (click)="logout()" pTooltip="Logout" tooltipPosition="bottom" class="hidden sm:flex">
+            </button>
+
+            <!-- Mobile logout button -->
+            <button pButton pRipple icon="pi pi-sign-out" [rounded]="true" [text]="true"
+                    severity="secondary" (click)="logout()" class="sm:hidden">
+            </button>
+          </div>
+        </div>
+        } @else {
+        <!-- Guest User -->
+        <div class="flex items-center space-x-2">
+          <button pButton pRipple label="Login" icon="pi pi-sign-in" severity="secondary" [outlined]="true"
+                  size="small" (click)="navigateToLogin()"
+                  class="font-medium text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"></button>
+
+          <!-- Guest Menu -->
+          <div class="relative">
+            <button pButton pRipple icon="pi pi-ellipsis-v" [rounded]="true" [text]="true"
+                    severity="secondary" (click)="toggleGuestMenu($event)"
+                    class="h-9 w-9 sm:h-10 sm:w-10 transition-all duration-300 hover:rotate-12 hover:bg-surface-200 dark:hover:bg-surface-700"
+                    [class.rotate-90]="isGuestMenuOpen">
+            </button>
+
+            <!-- Custom guest menu dropdown -->
+            <div #guestMenuDropdown [class.hidden]="!isGuestMenuOpen"
+                 class="absolute bg-white right-0 mt-2 w-48 z-50 rounded-lg shadow-lg border surface-border bg-surface-0 dark:bg-surface-900 transform transition-all duration-300 ease-out"
+                 [class.animate-slideInDown]="isGuestMenuOpen" [class.opacity-0]="!isGuestMenuOpen"
+                 [class.scale-95]="!isGuestMenuOpen">
+              <div class="py-1">
+                @for (item of profileMenuItems; track item.id; let i = $index) {
+                @if (item.separator) {
+                <div class="border-t surface-border my-1"></div>
+                } @else {
+                <button (click)="executeMenuItem(item); closeGuestMenu()"
+                        class="w-full text-left px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800 flex items-center gap-3 transition-all duration-200 hover:pl-6"
+                        [style.animation-delay]="i * 50 + 'ms'"
+                        [class.animate-slideInRight]="isGuestMenuOpen">
+                  <i [class]="item.icon" class="w-4 text-surface-500 transition-all duration-200"></i>
+                  <span>{{ item.label }}</span>
+                </button>
+                }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>

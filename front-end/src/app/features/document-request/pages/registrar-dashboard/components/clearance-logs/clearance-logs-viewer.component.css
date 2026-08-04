@@ -1,0 +1,18 @@
+/* Timeline styling to match system design patterns */
+::ng-deep .p-timeline-event-connector {
+    background-color: #E2E8F0;
+    width: 2px;
+}
+
+::ng-deep .p-timeline-event-marker {
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .p-timeline-event-content {
+    padding: 0 0 1rem 1rem;
+}
+
+::ng-deep .p-timeline:last-child .p-timeline-event-content {
+    padding-bottom: 0;
+}

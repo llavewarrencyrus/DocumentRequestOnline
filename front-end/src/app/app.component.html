@@ -1,0 +1,33 @@
+<router-outlet></router-outlet>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog>
+  <ng-template #headless let-message let-onAccept="onAccept" let-onReject="onReject">
+    <div class="flex flex-col items-center p-8 bg-surface-0 dark:bg-surface-900 rounded max-w-xl">
+      <div
+           class=" rounded-full bg-primary text-primary-contrast inline-flex justify-center items-center h-24 w-24
+         -mt-20">
+        <i [class]="(message.icon || 'pi pi-question') + ' !text-4xl'"></i>
+      </div>
+      <span class="font-bold text-2xl block mb-2 mt-3">{{ message.header }}</span>
+      <p class="mb-0">{{ message.message }}</p>
+      <div class="flex items-center gap-1 mt-5">
+        <p-button
+                  class="p-0 "
+                  [outlined]="true"
+                  (onClick)="onReject()">
+          <span class="px-2 font-black text-[11px] uppercase tracking-widest">
+            {{message.rejectLabel ? message.rejectLabel : 'Cancel'}}
+          </span>
+        </p-button>
+        <p-button
+                  class="p-0 "
+                  (onClick)="onAccept()">
+          <span class="px-2 font-black text-[11px] uppercase tracking-widest">
+            {{message.acceptLabel ? message.acceptLabel : 'Continue'}}
+          </span>
+        </p-button>
+      </div>
+    </div>
+  </ng-template>
+</p-confirmDialog>

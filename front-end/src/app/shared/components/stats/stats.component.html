@@ -1,0 +1,15 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 {{ getGridCols() }} gap-6">
+  @for (stat of stats(); track stat.title) {
+  <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start">
+      <div>
+        <span class="text-slate-500 text-xs font-semibold uppercase tracking-wider">{{ stat.title }}</span>
+        <div class="text-3xl font-bold text-slate-900 mt-1">{{ stat.value }}</div>
+      </div>
+      <div class="p-2.5 rounded-xl {{ stat.bgColor }} {{ stat.iconColor }}">
+        <i class="pi {{ stat.icon }} text-xl"></i>
+      </div>
+    </div>
+  </div>
+  }
+</div>

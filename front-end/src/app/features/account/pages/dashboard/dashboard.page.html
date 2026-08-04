@@ -1,0 +1,51 @@
+﻿<!-- frontend/src/app/modules/users/pages/dashboard/dashboard.page.html -->
+<div class="min-h-screen bg-[#f8fafc] p-4 md:p-8">
+
+  <app-master-dialog
+                     [(visible)]="showMasterDialog"
+                     [config]="dialogConfig">
+  </app-master-dialog>
+
+  <div class="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+          User Management
+        </h1>
+        <p class="text-slate-500 text-sm">
+          Manage system users and their roles
+        </p>
+      </div>
+      <button
+              pButton
+              label="Add New User"
+              icon="pi pi-plus"
+              class="bg-brose-600 hover:bg-rose-700 border-rose-600 !rounded-xs"
+              (click)="openCreateDialog()">
+      </button>
+    </header>
+
+    <!-- Stats Cards -->
+    <div>
+      <app-stats [stats]="statsItems"></app-stats>
+    </div>
+
+    <!-- User Table Component -->
+    <user-table
+                [users]="users"
+                [loading]="loading"
+                [totalRecords]="totalRecords"
+                [currentPage]="currentPage"
+                [pageSize]="pageSize"
+                (refresh)="refreshData()"
+                (pageChange)="onPageChange($event)"
+                (viewUser)="onViewUser($event)"
+                (editUser)="openEditDialog($event)"
+                (invitationLink)="onInvitationLink($event)"
+                (toggleStatus)="onDeactivate($event)"
+                (resetPassword)="onResetPassword($event)"
+                (filterChange)="onFilterChange($event)">
+    </user-table>
+  </div>
+
+</div>

@@ -1,0 +1,120 @@
+/* Custom Animations */
+
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceSoft {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes ping {
+    75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-slideInLeft {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slideInRight {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slideInDown {
+    animation: slideInDown 0.3s ease-out;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.2s ease-out;
+}
+
+.animate-bounceSoft {
+    animation: bounceSoft 1s ease-in-out;
+}
+
+.animate-ping {
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Smooth transition for all interactive elements */
+button, a, .cursor-pointer {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Notification panel entrance animation */
+.notification-panel .p-overlaypanel-content {
+    animation: slideInDown 0.3s ease-out;
+}
+
+/* Hover effects for menu items */
+.hover\:pl-6:hover {
+    padding-left: 1.5rem !important;
+}
+
+/* Scale animation for badges */
+.p-badge {
+    transition: all 0.2s ease-out;
+}
+
+.p-badge:hover {
+    transform: scale(1.1);
+}
+
+/* Smooth dropdown transitions */
+.absolute.transform {
+    transform-origin: top right;
+    transition-property: opacity, transform, visibility;
+}

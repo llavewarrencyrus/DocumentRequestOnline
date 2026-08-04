@@ -1,0 +1,100 @@
+﻿<p-dialog
+          [(visible)]="visible"
+          (visibleChange)="onVisibleChange($event)"
+          [modal]="true"
+          [draggable]="false"
+          [resizable]="false"
+          [closable]="true"
+          class="seamless-dialog max-w-[350px]"
+          contentStyleClass="overflow-x-hidden">
+  <ng-template #header>
+    <div class="inline-flex items-center justify-center gap-2">
+      <span class="font-bold whitespace-nowrap text-xl">
+        @if (headerTemplate()) {
+        <ng-container *ngTemplateOutlet="headerTemplate()"></ng-container>
+        } @else {
+        {{ dialogHeader() }}
+        }
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="relative min-h-[200px] transition-all duration-300"
+       style="height: auto; transition: all 0.3s ease-in-out"
+       [style]="{ width: dialogWidth() }">
+
+    @if (showBackButton()) {
+    <button
+            pButton
+            icon="pi pi-chevron-left"
+            label="Back"
+            class="p-button-text p-button-sm"
+            (click)="goBack()">
+    </button>
+    }
+
+    @if (currentComponent(); as component) {
+    <div @slideContent class="w-full" *ngFor="let viewId of [currentViewId()]">
+      <div [style]="{ maxWidth: dialogWidth() }">
+        <ng-container
+                      [ngComponentOutlet]="component"
+                      [ngComponentOutletInputs]="currentComponentData()">
+        </ng-container>
+      </div>
+    </div>
+    }
+
+  </div>
+  @if (footerTemplate()) {
+  <ng-template #footer>
+    <ng-container [ngTemplateOutlet]="footerTemplate()"></ng-container>
+  </ng-template>
+  } @else if (footerActions()) {
+  <ng-template #footer>
+    <div class="relative w-full">
+      @for (view of [currentViewId()]; track view) {
+      <div @fadeInOut class="flex justify-between items-center w-full gap-2">
+        @if(leftFooterActions().length > 0){
+        <div class="button-group flex justify-start gap-2">
+          @for (btn of leftFooterActions(); track btn.label) {
+          @if (evaluateVisibility(btn.visible)) {
+          <button
+                  pButton
+                  [label]="btn.label"
+                  [icon]="btn.icon ?? ''"
+                  [text]="btn.text ?? false"
+                  [severity]="btn.severity === 'warning' ? 'warn' : btn.severity"
+                  [class]="'rounded px-8 py-3 font-black text-[11px] uppercase tracking-widest ' + (btn.outlined ? 'p-button-outlined ' : ' ') + btn.styleClass"
+                  [disabled]="evaluateDisabled(btn.disabled)"
+                  [style.width]="btn.width === 'full' ? '100%' : (btn.width === 'auto' ? 'auto' : (btn.width || ''))"
+                  (click)="executeAction(btn.action)">
+          </button>
+          }
+          }
+        </div>
+        }
+        @if(rightFooterActions().length > 0){
+        <div class="button-group flex justify-end gap-2 flex-1">
+          @for (btn of rightFooterActions(); track btn.label) {
+          @if (evaluateVisibility(btn.visible)) {
+          <button
+                  pButton
+                  [label]="btn.label"
+                  [icon]="btn.icon ?? ''"
+                  [text]="btn.text ?? false"
+                  [severity]="btn.severity === 'warning' ? 'warn' : btn.severity"
+                  [class]="'rounded py-3 font-black text-[11px] uppercase tracking-widest ' + (btn.outlined ? 'p-button-outlined ' : ' ') + (btn.text ? 'px-2 ': 'px-8 ') + btn.styleClass"
+                  [disabled]="evaluateDisabled(btn.disabled)"
+                  [style.width]="btn.width === 'full' ? '100%' : (btn.width === 'auto' ? 'auto' : (btn.width || ''))"
+                  (click)="executeAction(btn.action)">
+          </button>
+          }
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </ng-template>
+  }
+</p-dialog>

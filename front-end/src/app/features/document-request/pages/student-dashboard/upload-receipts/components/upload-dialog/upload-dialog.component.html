@@ -1,0 +1,21 @@
+@if (selectedRequestForReceipt()) {
+<div class="p-4">
+  <div class="mb-4 pb-3 border-b border-gray-200">
+    <h3 class="font-semibold text-gray-900">Request #{{ selectedRequestForReceipt()?.id }}</h3>
+    <p class="text-sm text-gray-600 mt-1">
+      {{ selectedRequestForReceipt()?.documentsDisplayName }}
+    </p>
+    <div class="mt-2 flex items-center gap-2 text-xs">
+      <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+        Status: {{ selectedRequestForReceipt()?.status }}
+      </span>
+      <span class="text-gray-500">
+        Qty: {{ selectedRequestForReceipt()?.quantity }}
+      </span>
+    </div>
+  </div>
+
+  <app-receipt-upload [requestId]="selectedRequestForReceipt()!.id">
+  </app-receipt-upload>
+</div>
+}

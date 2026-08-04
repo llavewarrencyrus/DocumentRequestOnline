@@ -1,0 +1,88 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+
+  <!-- Decline Reason Modal -->
+  <decline-reason-dialog [(isVisible)]="studentRequestService.displayDeclineDialog"
+                         [(selectedDeclinedRequest)]="studentRequestService.selectedDeclineReason"></decline-reason-dialog>
+
+
+  <!-- Receipt List Dialog - Shows all receipts for a request -->
+  <receipt-dialog [(isVisible)]="receiptService.displayReceiptListDialog"
+                  [(selectedRequestReceipts)]="receiptService.selectedRequestReceipts"
+                  [canDelete]="true" />
+
+  <!-- Receipt Viewer Dialog -->
+  <receipt-gallery />
+
+  <app-master-dialog [(visible)]="studentRequestService.showMasterDialog"
+                     [config]="dialogConfig" />
+
+  <div class="max-w-6xl mx-auto p-4 md:p-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- Mobile Request Button -->
+      <div class="p-4 border-b border-gray-100 md:hidden bg-white sticky top-0 z-10">
+        <button pButton routerLink="/student/requests/new" label="Request New Document" icon="pi pi-plus"
+                class="w-full bg-rose-500 border-rose-500 text-white shadow-sm"></button>
+      </div>
+
+      <!-- Tabs -->
+      <p-tabs #tabs [value]="activeTabIndex" scrollable (onChange)="onTabChange($event)">
+        <p-tablist class="px-4 pt-2">
+          <p-tab class="md:px-[18px] px-2 " value="0"><span
+                  class="md:text-base text-sm font-bold">Overview</span></p-tab>
+          <p-tab class="md:px-[18px] px-2 " value="1"><span class="md:text-base text-sm font-bold">My
+              Requests</span></p-tab>
+          <p-tab class="md:px-[18px] px-2 " value="2"><span
+                  class="md:text-base text-sm font-bold">Catalog</span></p-tab>
+
+          <div class="hidden md:flex lg:w-auto text-right flex-1 items-center justify-end">
+            <button pButton routerLink="/student/requests/new" label="Request New Document" icon="pi pi-plus"
+                    class="bg-rose-500 hover:bg-rose-600 border-rose-500 text-white shadow-sm"></button>
+          </div>
+        </p-tablist>
+
+        <p-tabpanels class="p-4 md:p-6">
+          <!-- Overview Tab -->
+          <p-tabpanel value="0">
+            <overview-tab></overview-tab>
+          </p-tabpanel>
+
+          <!-- My Requests Tab -->
+          <p-tabpanel value="1">
+            <my-requests-tab
+                             [studentId]="studentId"
+                             [requests]="requestService.requests()"
+                             [selectedStatusFilter]="requestFilter"
+                             [callbacks]="navigateDialog" />
+          </p-tabpanel>
+
+          <!-- Catalog Tab -->
+          <p-tabpanel value="2">
+            <catalog-tab [documentOptions]="documentOptions"></catalog-tab>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-6 border-t border-gray-300">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+            </div>
+            <span class="font-bold text-gray-900">University of Baguio</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Admissions and Records Center Document Request System</p>
+        </div>
+        <div class="text-sm text-gray-600">
+          © 2024 University of Baguio. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

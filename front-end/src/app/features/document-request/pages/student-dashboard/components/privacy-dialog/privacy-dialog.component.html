@@ -1,0 +1,64 @@
+﻿<p-dialog
+          appendTo="body"
+          header="Data Privacy and Authorization Policy"
+          [visible]="visible()"
+          (visibleChange)="visibleChange.emit($event)"
+          [modal]="true"
+          [style]="{width: '600px', maxWidth: '95vw'}"
+          [closable]="true"
+          (onHide)="onCancel()"
+          [styleClass]="'privacy-dialog'">
+  <div class="privacy-content flex flex-col gap-4"
+       style="padding: 20px; border: 2px solid #f1f5f9; border-radius: 12px; background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);">
+    <div class="border-b-2 border-slate-100 pb-3">
+      <h3 class="text-[12px] font-black text-red-700 uppercase tracking-[0.2em] mb-2">Data Privacy and Authorization
+        Policy</h3>
+      <p class="text-[10px] text-slate-400 font-bold uppercase">Please read carefully before proceeding</p>
+    </div>
+
+    <ol class="list-decimal pl-6 space-y-4">
+      <li class="text-[11px] text-slate-700 leading-relaxed">
+        <p class="mt-2 text-slate-600">It is the policy of the school that whatever information it gathers; will be
+          collected, processed and stored pursuant to the general principles of transparency, legitimate purpose, and
+          proportionality, as mandated by Republic Act No. 10173 or the Data Privacy Act of 2012, its Implementing Rules
+          and Regulations (IRR), and other relevant privacy policies issued by the National Privacy Commission.</p>
+      </li>
+      <li class="text-[11px] text-slate-700 leading-relaxed">
+        <p class="mt-2 text-slate-600">As a rule, an authorization is valid only for a specific request. If the owner
+          wishes to authorize the same person to request for another set of documents in the future, then another letter
+          of authorization must be issued (Article XX SCHOOL RECORDS AND TRANSFER OF STUDENT Section 97-Release of
+          Records Education Law and the Private Schools, Ulpiano 'ULAN' P. Sarmiento IIII, Revised Expanded Edition -
+          2009).</p>
+      </li>
+    </ol>
+
+    <div class="mt-4 pt-4 border-t-2 border-slate-100">
+      <div class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-lg p-4"
+           #actionBox>
+        <div class="flex-shrink-0">
+          <i class="pi pi-info-circle text-red-700 text-lg"></i>
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-red-700 uppercase tracking-widest">Action Required</p>
+          <p class="text-[10px] text-slate-600 mt-1">Scroll to the bottom to enable the sign-off button</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-100">
+      <p-button label="Cancel"
+                icon="pi pi-times"
+                [text]="true"
+                (onClick)="onCancel()"
+                class="p-button-text !text-slate-600 hover:!bg-slate-100 !font-black !text-[11px] !uppercase !tracking-widest" />
+      <p-button label="Confirm Sign Off"
+                icon="pi pi-check"
+                (onClick)="onConfirm()"
+                [disabled]="!canConfirm"
+                [loading]="isConfirming"
+                styleClass="!bg-red-700 !border-red-700 hover:!bg-red-800 !disabled:!bg-slate-300 !disabled:!border-slate-300 !disabled:!cursor-not-allowed rounded px-8 py-3 font-black text-[11px] uppercase tracking-widest shadow-lg" />
+    </div>
+  </ng-template>
+</p-dialog>

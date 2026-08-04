@@ -1,0 +1,143 @@
+﻿@if(request()) {
+<div class="flex flex-col gap-4 p-2 animate-fadein">
+
+  <div class="flex flex-wrap items-center justify-between gap-4 border-b-2 border-slate-100 pb-2">
+    <div class="flex flex-col">
+      <span class="text-[10px] font-black text-red-700 uppercase tracking-widest">Clearance Reference</span>
+      <h2 class="m-0 text-3xl font-black text-slate-900 tracking-tighter">#{{request()?.requestId}}</h2>
+      <p class="m-0 text-[10px] text-slate-400 font-bold uppercase mt-1">
+        Received: {{request()?.createdAt | date:'mediumDate'}}
+      </p>
+    </div>
+
+    <div class="flex flex-col items-end gap-2">
+      <p-tag [severity]="getStatusSeverity(request()?.status || '')"
+             [value]="clearanceService.getStatusLabel(request()?.status || '')"
+             styleClass="px-4 py-1.5 uppercase text-[10px] font-black tracking-widest rounded border-none" />
+
+      <span class="text-[9px] font-black uppercase tracking-tighter"
+            [class]="isPaymentVerified() ? 'text-emerald-600' : 'text-red-500'">
+        {{ isPaymentVerified() ? 'Payment Verified' : 'Awaiting Payment' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-8">
+    <div>
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Departmental Status</h3>
+        <div class="divide-y divide-slate-100 border-t border-b border-slate-100">
+          @for (approval of getFilteredApprovals(); track approval.id) {
+          <div>
+            <div class="py-1 flex items-center justify-between">
+              <div>
+                <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">
+                  {{clearanceService.getOfficeDisplay(approval.office)}}
+                </span>
+                @if (approval.status === 'APPROVED') {
+                <div class="text-[9px] text-slate-400 uppercase font-bold">
+                  Signed By: {{approval.signedBy}}
+                </div>
+                }@else if(approval.status==='ON_HOLD'){
+                <div class="text-[9px] text-slate-400 uppercase font-bold">
+                  Remarks:
+                </div>
+                }
+              </div>
+              <div>
+                <span class="block text-[10px] text-right font-black uppercase tracking-widest"
+                      [class]="approval.status === 'APPROVED' ? 'text-emerald-400' : 
+                                approval.status === 'ON_HOLD' ? 'text-rose-700' : 'text-slate-400'">
+                  {{
+                  approval.status === 'APPROVED' ? 'CLEARED' :
+                  approval.status === 'ON_HOLD' ? 'ON HOLD' : approval.status
+                  }}
+                </span>
+                @if (approval.status === 'APPROVED') {
+                <div class="text-[9px] text-slate-400 uppercase font-bold">
+                  {{approval.signedOn | date: 'mediumDate'}}
+                </div>
+                }
+              </div>
+            </div>
+            @if(approval.status === 'ON_HOLD' && isStudent()){
+            <div class="-mt-2">
+              <span class="text-[11px]">
+                {{approval.remarks}}
+              </span>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+    @if(isRegistrar()){
+    <div>
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Requester Signature</h3>
+        <div class="divide-y divide-slate-100 border-t border-b border-slate-100">
+          <div class="py-2 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-black text-slate-800 uppercase tracking-tight">Student Signature</span>
+              @if (isStudentSigned()) {
+              <div class="text-[9px] text-slate-400 uppercase font-bold">
+                Signed On: {{request()?.requestorSignedOn | date: 'mediumDate'}}
+              </div>
+              }
+            </div>
+            <div>
+              <span class="block text-[10px] text-right font-black uppercase tracking-widest"
+                    [class]="isStudentSigned() ? 'text-emerald-400': 'text-slate-400'">
+                {{ isStudentSigned() ? 'SIGNED' : 'NOT SIGNED' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    }
+    @if (isStudent()) {
+    <div class="flex items-center justify-end gap-3 border-t border-slate-100">
+
+      <div
+           class="w-full p-5 bg-slate-50 border border-slate-100 rounded-lg flex flex-wrap items-start justify-between gap-4">
+        <div class="space-y-1">
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-red-700">
+            Your Signature
+          </h3>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold text-slate-600">Signature required to process the
+              request</span>
+          </div>
+        </div>
+
+        @if (isStudentSigned()) {
+        <div class="text-right">
+          <label class="block text-[9px] font-black text-slate-400 uppercase mb-0.5">Signed</label>
+          <div class="text-[9px] text-slate-400 uppercase font-bold">{{request()?.requestorSignedOn | date:
+            'mediumDate'}}
+          </div>
+        </div>
+        } @else {
+        <div class="max-w-md text-right">
+          <p-button label="Sign Off"
+                    styleClass="!bg-red-700 !border-red-700 hover:!bg-red-800 rounded px-8 py-3 font-black text-[11px] uppercase tracking-widest shadow-lg"
+                    (onClick)="onSignClearance()"
+                    [disabled]="isSigning()"
+                    [loading]="isSigning()" />
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+<privacy-dialog [visible]="showPrivacyDialog()" (visibleChange)="showPrivacyDialog.set($event)"
+                (confirm)="onPrivacyDialogConfirm()" (cancel)="onPrivacyDialogCancel()" />
+} @else {
+<div class="p-8 text-center">
+  <p class="text-slate-500">No clearance request selected.</p>
+</div>
+}

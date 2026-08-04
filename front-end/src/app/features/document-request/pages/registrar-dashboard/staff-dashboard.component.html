@@ -1,0 +1,106 @@
+@if (loading && !filteredRequests.length) {
+<div
+     class="flex justify-content-center align-items-center"
+     style="min-height: 200px">
+  <p-progressSpinner />
+</div>
+}
+
+@if (!loading || filteredRequests.length) {
+<div
+     class="min-h-screen bg-[#f8fafc] p-4 md:p-8">
+
+  <!-- Master Dialog with View Switching -->
+  <app-master-dialog
+                     [(visible)]="showMasterDialog"
+                     [config]="dialogConfig" />
+
+  <!-- Receipt List Dialog -->
+  <receipt-dialog
+                  [(isVisible)]="showReceiptListDialog"
+                  [(selectedRequestReceipts)]="receiptDialogData"
+                  [canDelete]="false" />
+
+  <!-- Receipt Gallery Viewer -->
+  <receipt-gallery />
+
+  <div class="max-w-8xl mx-auto px-4 md:px-8 space-y-8">
+    <header
+            class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+          Staff Dashboard
+        </h1>
+        <p class="text-slate-500 text-sm">
+          Manage university document requests and processing status.
+        </p>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div>
+      <app-stats [stats]="statsItems"></app-stats>
+    </div>
+
+    <!-- Tabs for Requests and Clearance -->
+    <p-tabs [(value)]="activeTab" lazy class="browser-tabs">
+      <p-tablist class="bg-[#f8fafc]">
+        <p-tab value="0" class="browser-tab">
+          <span class="font-bold">Document Requests</span>
+        </p-tab>
+        <p-tab value="1" class="browser-tab">
+          <span class="font-bold">Clearance Requests</span>
+        </p-tab>
+      </p-tablist>
+      <p-tabpanels class="p-4">
+        <!-- Document Requests Tab -->
+        <p-tabpanel value="0">
+          <!-- Data Table -->
+          <div>
+            <app-requests-table
+                                [requests]="allRequests"
+                                [totalItems]="totalItems"
+                                [pageSize]="pageSize"
+                                [currentPage]="currentPage"
+                                [isLoading]="isLoadingTable"
+                                [courses]="courses"
+                                (pageChange)="onPageChange($event)"
+                                (refresh)="refreshData()"
+                                (filterChange)="onFilterChange($event)"
+                                (viewDetails)="viewRequestDetails($event)"
+                                (viewReceipt)="viewReceipt($event)"
+                                (initiateClearance)="onInitiateClearance($event)"
+                                (viewClearance)="viewClearance($event)"
+                                (exportClearance)="exportClearance($event)"
+                                (approveRequest)="approveRequest($event)"
+                                (declineRequest)="openDeclineDialog($event)"
+                                (editDocuments)="openEditDocumentsDialog($event)" />
+          </div>
+        </p-tabpanel>
+
+        <!-- Clearance Tab -->
+        <p-tabpanel value="1">
+          @if(clearanceRequests.length > 0 || activeTab() === '1'){
+          <div>
+            <clearance-table
+                             [clearanceRequests]="clearanceRequests"
+                             [loading]="clearanceLoading"
+                             [totalRecords]="clearanceTotalRecords"
+                             [currentPage]="clearanceCurrentPage"
+                             [pageSize]="clearancePageSize"
+                             [currentUserRole]="getCurrentUserRole()"
+                             [getMappedOffice]="getMappedOffice()"
+                             (refresh)="onClearanceRefresh()"
+                             (pageChange)="onClearancePageChange($event)"
+                             (viewDetails)="onClearanceViewDetails($event)"
+                             (filterChange)="onClearanceFilterChange($event)"
+                             (viewLogs)="onClearanceViewLogs($event)"
+                             (export)="exportClearance($event)" />
+          </div>
+          }
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+</div>
+}

@@ -1,0 +1,195 @@
+﻿<!-- Main Table Card -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <!-- Filters Section -->
+  <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div class="w-full">
+        <app-table-filters
+                           [(search)]="searchInput"
+                           [(select)]="selectItems"
+                           [(date)]="dates"
+                           (onFilter)="onFilterChange($event)" />
+      </div>
+      <div class="flex items-center w-full lg:w-auto">
+        <button
+                pButton
+                icon="pi pi-refresh"
+                (click)="onRefresh()"
+                class="p-button-text p-button-secondary !rounded-xl"
+                pTooltip="Refresh data"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <p-table
+           [value]="clearanceRequests()"
+           [lazy]="true"
+           (onLazyLoad)="onPageChange($event)"
+           [paginator]="true"
+           [rows]="pageSize()"
+           [first]="(currentPage() - 1) * pageSize()"
+           [totalRecords]="totalRecords()"
+           sortField="createdAt"
+           [sortOrder]="-1"
+           [loading]="loading()"
+           [showCurrentPageReport]="true"
+           responsiveLayout="stack"
+           breakpoint="960px"
+           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
+           [rowsPerPageOptions]="[10, 25, 50]"
+           styleClass="p-datatable-hoverable-rows">
+    <ng-template pTemplate="sorticon" field="col.field" let-sortOrder>
+      <app-sorticon [sortOrder]="sortOrder" />
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr class="!bg-transparent">
+        <th pSortableColumn="requestId">
+          <div class="flex items-center gap-1">
+            <span class="overflow-hidden whitespace-nowrap">Request ID</span>
+            <p-sortIcon field="requestId"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="studentName">
+          <div class="flex items-center gap-1">
+            Student <p-sortIcon field="studentName"></p-sortIcon>
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center gap-1">Course</div>
+        </th>
+        <th pSortableColumn="type">
+          <div class="flex items-center gap-1">
+            Type <p-sortIcon field="type"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="createdAt">
+          <div class="flex items-center gap-1">
+            <span class="overflow-hidden whitespace-nowrap">Date Requested</span>
+            <p-sortIcon field="createdAt"></p-sortIcon>
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center justify-center gap-1">Status</div>
+        </th>
+        @if(currentUserRole() !== 'Cashier'){
+        <th>
+          <div class="flex items-center gap-1">Approvals</div>
+        </th>
+        }
+        <th>
+          <div class="flex items-center gap-1"> </div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-request>
+      <tr
+          class="group transition-colors hover:bg-slate-50/80 context-menu-target"
+          (click)="onRowClick(request)"
+          (contextmenu)="onRowContextMenu($event, request)">
+        <td>
+          <span
+                class="px-2 py-1 bg-rose-100 text-rose-700 rounded text-xs font-mono font-bold border border-slate-200">
+            #{{request.requestId}}
+          </span>
+        </td>
+        <td>
+          <div class="flex flex-col">
+            <span class="font-bold text-slate-900">{{ request.studentName }}</span>
+            <span class="text-xs text-slate-500">{{ request.studentId }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex flex-col">
+            <span class="text-sm text-slate-700">{{request.course}}</span>
+          </div>
+        </td>
+        <td>
+          <p-tag [value]="clearanceService.getTypeDisplay(request.type)" severity="info"
+                 class="whitespace-nowrap"></p-tag>
+        </td>
+        <td>
+          <div class="text-sm text-slate-600">
+            <i class="pi pi-calendar text-[10px] mr-1"></i>
+            {{request.createdAt | date:'mediumDate'}}
+          </div>
+        </td>
+        <td class="text-center">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                [ngClass]="{
+                      'bg-yellow-50 text-yellow-700': getOfficeStatus(request) === 'PENDING',
+                      'bg-emerald-50 text-emerald-700': getOfficeStatus(request) === 'APPROVED',
+                      'bg-rose-50 text-rose-700': getOfficeStatus(request) === 'ON_HOLD',
+                    }">
+            <span class="w-1.5 h-1.5 rounded-full mr-1.5 inline-block"
+                  [ngClass]="{
+                        'bg-yellow-500': getOfficeStatus(request) === 'PENDING',
+                        'bg-emerald-500': getOfficeStatus(request) === 'APPROVED',
+                        'bg-rose-500': getOfficeStatus(request) === 'ON_HOLD'
+                      }"></span>
+            {{(currentUserRole() === 'Cashier' && getOfficeStatus(request) === 'APPROVED') ? 'Verified' :
+            clearanceService.getApprovalStatus(getOfficeStatus(request))}}
+          </span>
+        </td>
+        @if(currentUserRole() !== 'Cashier'){
+        <td>
+          <div class="flex items-center gap-1">
+            <p-avatarGroup>
+              @for (approval of request.approvals; track approval) {
+              @if (approval.office !== 'CASHIER') {
+              <p-avatar
+                        [pTooltip]="approval.office"
+                        tooltipPosition="top"
+                        [icon]="clearanceService.getOfficeIcon(approval.office)"
+                        [ngClass]="{
+                          'bg-emerald-500 text-white': approval.status === 'APPROVED',
+                          'bg-rose-500 text-white': approval.status === 'REJECTED',
+                          'bg-slate-300 text-slate-600': approval.status !== 'APPROVED' && approval.status !== 'REJECTED'
+                        }">
+              </p-avatar>
+              } @else if (request.status === 'PENDING') {
+              <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap bg-yellow-50 text-yellow-700 border-yellow-200">
+                Awaiting Payment Verification
+              </span>
+              }
+              }
+            </p-avatarGroup>
+          </div>
+        </td>
+        }
+        <td class="text-right">
+          <div class="flex justify-center gap-1">
+            <button
+                    pButton
+                    icon="pi pi-ellipsis-v"
+                    (click)="onActionMenuClick($event, request)"
+                    class="p-button-rounded p-button-text p-button-sm !text-slate-600"
+                    pTooltip="Actions"
+                    type="button">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8">
+          <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+            <i class="pi pi-inbox text-5xl mb-4 opacity-20"></i>
+            <p class="text-lg font-medium text-slate-600">No clearance requests found</p>
+            <p class="text-sm text-slate-500">No matching requests found</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Context Menu -->
+<p-contextmenu #rowContextMenu [model]="contextMenuItems"></p-contextmenu>
+
+<!-- Action Menu (3-dot menu) -->
+<p-menu #actionMenu [model]="contextMenuItems" [popup]="true"></p-menu>

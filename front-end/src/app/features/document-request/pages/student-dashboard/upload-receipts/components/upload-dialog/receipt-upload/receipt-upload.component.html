@@ -1,0 +1,93 @@
+<div class="receipt-upload-container">
+  <!-- Upload Area - Always visible -->
+  <div class="upload-area p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors mb-4"
+    [class.border-rose-500]="isDragover" [class.bg-rose-50]="isDragover" [class.border-gray-300]="!isDragover"
+    [class.bg-gray-50]="!isDragover" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)" (click)="fileInput.click()">
+    <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)" accept=".png,.jpg,.jpeg,.pdf"
+      multiple>
+
+    <i class="pi pi-cloud-upload text-4xl mb-2" [class.text-rose-500]="isDragover" [class.text-gray-400]="!isDragover">
+    </i>
+    <p class="text-sm font-medium mb-1">
+      <span class="text-rose-600">Click to upload</span> or drag and drop
+    </p>
+    <p class="text-xs text-gray-500">
+      PNG, JPG, JPEG, PDF (Max 10MB each, up to 10 files)
+    </p>
+    @if (selectedFiles.length > 0) {
+    <p class="text-xs text-rose-500 mt-1">
+      {{ selectedFiles.length }} file(s) selected
+    </p>
+    }
+  </div>
+
+  <!-- Selected Files Preview -->
+  @if (selectedFiles.length > 0 && !isUploading) {
+  <div class="selected-files-preview mb-4">
+    <h4 class="text-sm font-semibold mb-2">Selected Files:</h4>
+    <div class="space-y-2">
+      @for (file of selectedFiles; track file.name;let i = $index){
+      <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <i [class]="getFileIconFromName(file.name)" class="text-lg"></i>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium truncate">{{ file.name }}</p>
+            <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
+          </div>
+        </div>
+        <button pButton type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-sm"
+          (click)="removeSelectedFile(i)"></button>
+      </div>
+      }
+    </div>
+    <div class="flex gap-2 mt-3">
+      <button pButton label="Upload All" icon="pi pi-upload" class="p-button-sm flex-1"
+        (click)="uploadSelectedFiles()"></button>
+      <button pButton label="Clear" icon="pi pi-trash" class="p-button-outlined p-button-sm flex-1"
+        (click)="clearSelectedFiles()"></button>
+    </div>
+  </div>
+  }
+
+  <div class="my-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+    <p class="flex items-start gap-2">
+      <i class="pi pi-info-circle mt-0.5 flex-shrink-0"></i>
+      <span>
+        Upload your payment receipts for verification. You can upload up to 10 files at once.
+        Accepted formats: PNG, JPG, JPEG, PDF (Max 10MB each)
+      </span>
+    </p>
+  </div>
+
+  <!-- Upload Progress -->
+  @if (isUploading){
+  <div class="upload-progress p-4 bg-gray-50 rounded-lg mb-4">
+    <p class="text-sm font-medium mb-2">Uploading {{ uploadProgress.current }}/{{ uploadProgress.total }} files...</p>
+    <p-progressBar [value]="uploadProgress.percentage" [showValue]="true" styleClass="mb-2"
+      [class.progress-bar]="true"></p-progressBar>
+    <p class="text-xs text-gray-500 text-center">
+      Uploading... {{ uploadProgress.percentage }}%
+    </p>
+    <p class="text-xs text-gray-400 text-center mt-1">
+      Please don't close this window
+    </p>
+  </div>
+  }
+
+  <!-- Uploaded Files Display -->
+  @if (receipts().length > 0) {
+  <div class="uploaded-files">
+    <h4 class="text-sm font-semibold mb-2">Uploaded Receipts ({{ receipts().length }}):</h4>
+    <receipt-list [receipts]="receipts()" [canDelete]="true"
+      (onDelete)="removeReceipt($event)"></receipt-list>
+  </div>
+  }
+  <!-- Error Message -->
+  @if (errorMessage) {
+  <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+    <i class="pi pi-exclamation-triangle mr-1"></i>
+    {{ errorMessage }}
+  </div>
+  }
+</div>

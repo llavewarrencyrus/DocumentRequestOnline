@@ -1,0 +1,115 @@
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="flex flex-col items-center mb-6">
+      <div class="h-16 w-16 bg-[#FF0000] text-white rounded-full flex items-center justify-center shadow-md mb-4">
+        <i class="pi pi-shield text-3xl"></i>
+      </div>
+      <h2 class="text-3xl font-black text-slate-900 tracking-tight text-center">Staff Sign In</h2>
+      <p class="mt-1 text-center text-sm text-slate-500 italic">
+        University of Baguio - Admissions and Records Center
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
+    <p-card styleClass="shadow-xl border border-slate-200 rounded-lg overflow-hidden bg-white">
+
+      <div class="mb-8 flex justify-center">
+        <span
+              class="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-[#FF0000] border border-red-100">
+          <i class="pi pi-user-edit mr-2"></i>
+          Staff & Admin Access
+        </span>
+      </div>
+
+      <form class="flex flex-col gap-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <div class="flex flex-col gap-2">
+          <label for="username" class="text-xs font-bold uppercase text-slate-600">
+            Username <span class="text-red-600">*</span>
+          </label>
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-user" />
+            <input
+                   id="username"
+                   pInputText
+                   formControlName="username"
+                   placeholder="e.g., arc.staff"
+                   class="w-full py-3 border-slate-300 focus:border-[#FF0000]"
+                   [fluid]="true" />
+          </p-iconfield>
+          <div class="text-[10px] text-slate-400 font-mono">
+            Format: arc.username (e.g., arc.staff)
+          </div>
+          <small class="text-red-600" *ngIf="username?.invalid && (username?.dirty || username?.touched)">
+            {{ getUsernameError() }}
+          </small>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="password" class="text-xs font-bold uppercase text-slate-600">
+            Password <span class="text-red-600">*</span>
+          </label>
+          <p-password
+                      id="password"
+                      formControlName="password"
+                      [toggleMask]="true"
+                      [feedback]="false"
+                      placeholder="Enter your password"
+                      styleClass="w-full"
+                      inputStyleClass="w-full py-3 border-slate-300 focus:border-[#FF0000]"
+                      [fluid]="true" />
+          <small class="text-red-600" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+            {{ getPasswordError() }}
+          </small>
+        </div>
+
+        <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full" />
+
+        <p-button
+                  type="submit"
+                  label="Sign In as Staff"
+                  icon="pi pi-sign-in"
+                  [loading]="isLoading"
+                  [disabled]="loginForm.invalid"
+                  styleClass="w-full py-3 mt-2 bg-[#FF0000] border-none hover:bg-red-700" />
+      </form>
+
+      @if(!environment.production){
+      <p-divider align="center" styleClass="my-8">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Demo Access</span>
+      </p-divider>
+
+      <div class="space-y-3">
+        <div *ngFor="let account of demoAccounts"
+             (click)="fillDemoCredentials(account)"
+             class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-all">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">{{ account.icon }}</span>
+            <div class="text-left">
+              <div class="text-xs font-bold text-slate-900">{{ account.title }}</div>
+              <div class="text-[10px] font-mono text-slate-500 mt-1">
+                {{ account.username }}
+              </div>
+            </div>
+          </div>
+          <i class="pi pi-chevron-right text-slate-300 text-sm"></i>
+        </div>
+      </div>
+      }
+
+      <div class="mt-8 text-center pt-4 border-t border-slate-100">
+        <p class="text-sm text-slate-600">
+          Are you a student?
+          <a routerLink="/login/student" class="no-underline font-bold text-[#FF0000] hover:underline">
+            Sign in as Student
+          </a>
+        </p>
+      </div>
+    </p-card>
+
+    <div class="mt-8 text-center text-slate-400 text-[10px] uppercase tracking-widest">
+      © {{ currentYear }} ARC UB - Staff Portal
+    </div>
+  </div>
+</div>

@@ -1,0 +1,246 @@
+<div class="flex flex-col gap-4 p-2 ">
+  <!-- Status Banner -->
+  <div
+       class="p-4 rounded-lg border"
+       [class]="requestService.getStatusColor(request().status)">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span
+              [class]="'w-2 h-2 rounded-full ' + getStatusDot(request().status)"></span>
+        <span class="font-semibold text-sm">{{ requestService.getStatusLabel(request().status) }}</span>
+      </div>
+      <span class="text-sm font-mono font-bold bg-white/50 px-2 py-1 rounded">#{{ request().id }}</span>
+    </div>
+  </div>
+
+  <!-- Request Information -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Student Information -->
+    <div class="lg:col-span-5">
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+          Student Information
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Full Name</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ requestService.getStudentFullName(request()) }}
+            </div>
+          </div>
+
+          <div class="flex">
+            <div>
+              <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Student ID</label>
+              <div class="text-sm font-mono font-bold text-red-700">
+                {{ request().studentId }}
+              </div>
+            </div>
+
+            <div class="pl-20">
+              <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Year Level</label>
+              <div class="text-sm font-medium text-slate-900">
+                @if (request().year) {
+                {{ request().year }}{{ getYearOrdinal(request().year) }} Year
+                } @else {
+                N/A
+                }
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Course</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ getCourseDisplayName(request().requestorCourseId) }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Contact</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ request().contact || "N/A" }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Email</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ request().email || "N/A" }}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Request Details -->
+    <div class="lg:col-span-7">
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+          Request Details
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Request Number</label>
+            <div class="text-sm font-mono font-bold text-slate-900">
+              {{ request().requestNumber }}
+            </div>
+          </div>
+          @if(request().shortCode){
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Code</label>
+            <div class="text-sm font-mono font-bold text-slate-900">
+              {{ request().shortCode }}
+            </div>
+          </div>
+          }
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Date Requested</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ request().dateRequested | date: "medium" }}
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Documents
+                Requested</label>
+              @if(request().status === 'Pending') {
+              <button
+                      pButton
+                      icon="pi pi-pencil"
+                      label="Edit"
+                      (click)="handleEditDocuments()"
+                      class="p-button-outlined p-button-sm !rounded-lg !text-xs !py-1 !px-2"></button>
+              }
+            </div>
+            <div class="mt-1 space-y-1">
+              @for (doc of request().documents; track doc.documentId) {
+              <span
+                    class="inline-block mr-1 mb-1 px-2 py-1 bg-slate-50 text-slate-700 rounded text-xs border border-slate-100">
+                {{ doc.documentName }}
+              </span>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Quantity</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ request().quantity }} copy/ies
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Purpose</label>
+            <div class="text-sm text-slate-900">
+              {{ request().purpose || "N/A" }}
+            </div>
+          </div>
+
+          @if (request().claimDate) {
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Claim Date</label>
+            <div class="text-sm font-medium text-slate-900">
+              {{ request().claimDate | date: "mediumDate" }}
+            </div>
+          </div>
+          }
+
+          @if (request().declineReason) {
+          <div>
+            <label class="block text-[9px] font-black text-rose-400 uppercase tracking-wider">Decline Reason</label>
+            <div class="text-sm text-rose-600 bg-rose-50 p-2 rounded border border-rose-100">
+              {{ request().declineReason }}
+            </div>
+          </div>
+          }
+
+          @if (request().notes) {
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Notes</label>
+            <div class="text-sm text-slate-900">{{ request().notes }}</div>
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Receipt Section -->
+  <div class="pt-4 border-t-2 border-slate-100">
+    <section>
+      <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+        Payment Receipt
+      </h3>
+
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            @if (request().hasReceipt) {
+            <i class="pi pi-file-pdf text-2xl text-rose-500"></i>
+            <i class="pi pi-image text-2xl text-blue-500"></i>
+            } @else {
+            <i class="pi pi-times-circle text-2xl text-slate-400"></i>
+            }
+
+            <div>
+              <p class="font-medium text-slate-900">
+                {{ request().hasReceipt ? "Receipt Uploaded" : "No Receipt" }}
+              </p>
+              <p class="text-xs text-slate-500">
+                {{ request().hasReceipt ? request().receiptCount > 1 ?
+                "Click to view the receipt" : "Click to view or download the receipt" :
+                "Student has not uploaded a receipt yet" }}
+              </p>
+            </div>
+          </div>
+
+          @if (request().hasReceipt) {
+          <div class="flex gap-2">
+            <button
+                    pButton
+                    icon="pi pi-eye"
+                    label="View"
+                    (click)="onViewReceipt()"
+                    class="p-button-outlined p-button-sm !rounded-lg"></button>
+            @if(request().receiptCount === 1){
+            <button
+                    pButton
+                    icon="pi pi-download"
+                    label="Download"
+                    (click)="downloadReceipt()"
+                    class="p-button-outlined p-button-sm !rounded-lg"></button>
+            }
+          </div>
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Approval Information (if applicable) -->
+  @if (request().approvedBy) {
+  <div class="pt-4 border-t-2 border-slate-100">
+    <section>
+      <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+        Approval Information
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Approved By</label>
+          <div class="text-sm font-medium text-slate-900">
+            {{ request().approvedBy }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Date Approved</label>
+          <div class="text-sm font-medium text-slate-900">
+            {{ request().dateApproved | date: "medium" }}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  }
+</div>

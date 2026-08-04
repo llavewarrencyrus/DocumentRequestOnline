@@ -1,0 +1,25 @@
+.receipt-item {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    @media (max-width: 640px) {
+        &:active {
+            background-color: rgb(241 245 249);
+        }
+    }
+
+    .p-button {
+        @media (max-width: 640px) {
+            min-width: 44px;
+            min-height: 44px;
+            
+            .p-button-icon {
+                font-size: 1.2rem;
+            }
+        }
+    }
+}
+
+.receipt-item:hover {
+  transform: translateX(4px);
+}

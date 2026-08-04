@@ -1,0 +1,66 @@
+﻿<div class="flex flex-col gap-6 p-2 animate-fadein">
+
+  <div class="flex items-center justify-between p-5 bg-slate-50 border border-slate-200 rounded">
+    <div class="flex items-center gap-4">
+      <div
+           class="bg-white w-12 h-12 flex items-center justify-center rounded border border-slate-300 shadow-sm text-slate-400">
+        <i class="pi pi-user text-xl"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-sm font-black text-slate-900 uppercase tracking-tight">{{request().studentName}}</span>
+        <span class="text-[10px] text-red-700 font-bold tracking-widest uppercase">
+          {{request().studentId}} <span class="text-slate-300 mx-1">|</span> {{request().course}}
+          @if (request().year) {
+          <span class="text-slate-300 mx-1">|</span> {{request().year}}{{getYearOrdinal(request().year!)}} Year
+          }
+        </span>
+      </div>
+    </div>
+    <div class="text-right flex flex-col border-l border-slate-200 pl-4">
+      <span class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Request ID</span>
+      <span class="text-xs font-mono font-bold text-slate-900">#{{request().requestId}}</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+      <i class="pi pi-file-edit text-[10px]"></i> Scope of Request
+    </h3>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      @for (doc of request().documentList; track doc.id) {
+      <div class="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded shadow-sm">
+        <span class="text-[11px] font-bold text-slate-700 uppercase">{{doc.name}}</span>
+        <i class="pi pi-check text-[10px] text-emerald-500"></i>
+      </div>
+      } @empty {
+      <div class="col-span-2 p-6 text-center border-2 border-dashed border-slate-100 rounded">
+        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest italic m-0">No documents listed</p>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+    @if(approval().status !== 'APPROVED'){
+    @if(userRole() !== 'Cashier'){
+    <p-button
+              label="Mark Deficient"
+              icon="pi pi-exclamation-circle"
+              [text]="true"
+              styleClass="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-red-700"
+              (onClick)="onHold()" />
+    }
+    <p-button
+              [label]="userRole() === 'Cashier' ? 'Payment Verified' : 'Finalize Sign-off'"
+              icon="pi pi-verified"
+              styleClass="!bg-red-700 !border-red-700 hover:!bg-red-800 rounded px-8 py-3 font-black text-[11px] uppercase tracking-widest shadow-lg"
+              (onClick)="onApprove()" />
+    }@else if(userRole() === 'Cashier'){
+    <span class="text-[11px] font-black uppercase tracking-widest text-emerald-400">
+      <i class="pi pi-check-circle text-[10px]"></i>
+      Payment Verified
+    </span>
+    }
+  </div>
+</div>

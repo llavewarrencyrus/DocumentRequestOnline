@@ -1,0 +1,89 @@
+<div class="flex flex-col gap-4 p-2 h-[320px]">
+  <!-- Loading State -->
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-12">
+    <p-progressSpinner [style]="{'width': '50px', 'height': '50px'}" strokeWidth="4"></p-progressSpinner>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+  <div class="bg-rose-50 border border-rose-100 rounded-lg p-4 flex items-center gap-3">
+    <i class="pi pi-exclamation-triangle text-rose-500 text-xl"></i>
+    <span class="text-sm font-medium text-rose-700">{{ error() }}</span>
+  </div>
+  }
+
+  <!-- Logs Content -->
+  @if (!isLoading() && !error()) {
+  <div class="flex flex-col gap-4">
+    <!-- Section Header -->
+    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2">
+      <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+        Activity History
+      </h3>
+      <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">
+        {{ logs().length }} {{ logs().length === 1 ? 'entry' : 'entries' }}
+      </span>
+    </div>
+
+    <!-- Timeline -->
+    @if (logs().length > 0) {
+    <p-timeline [value]="getTimelineEvents()" [layout]="'vertical'" align="left">
+      <ng-template pTemplate="marker" let-event>
+        <span class="w-8 h-8 rounded-full flex items-center justify-center {{ event.iconBg }}">
+          <i [class]="event.icon + ' text-white text-xs'"></i>
+        </span>
+      </ng-template>
+      <ng-template pTemplate="opposite" let-event>
+        <div class="flex justify-end items-center gap-2">
+          <p-tag
+                 [value]="event.status"
+                 [severity]="event.severity"
+                 styleClass="px-3 py-1 uppercase text-[10px] font-black tracking-widest rounded border-none" />
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">
+            {{ event.date }}
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content" let-event>
+        <div class="flex flex-col gap-2">
+          <div class="text-sm font-medium text-slate-900">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">User:</span>
+            <span class="ml-1">{{ event.user }}</span>
+          </div>
+          @if (event.metadata) {
+          @for (item of event.metadata | keyvalue; track item.key) {
+          @if(item.value){
+          <div class="text-xs text-slate-600">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">{{ item.key }}:</span>
+            @if((item.value + '').length > 30){
+            <span (click)="copyValue(item.value + '')"
+                  class="ml-1 cursor-pointer hover:bg-slate-100"
+                  [pTooltip]="toolTip ? toolTip : (item.value + ' | Click to copy')">
+              {{ (item.value + '') | slice:0:30 }}...
+            </span>
+            } @else {
+            <span class="ml-1">
+              {{ item.value }}
+            </span>
+            }
+          </div>
+          }
+          }
+          }
+        </div>
+      </ng-template>
+    </p-timeline>
+    } @else {
+    <!-- Empty State -->
+    <div class="bg-slate-50 border border-slate-100 rounded-lg p-8 text-center">
+      <i class="pi pi-inbox text-3xl text-slate-400 mb-2"></i>
+      <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">
+        No logs available for this clearance
+      </p>
+    </div>
+    }
+  </div>
+  }
+</div>

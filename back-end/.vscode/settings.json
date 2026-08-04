@@ -1,0 +1,348 @@
+{
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.renderWhitespace": "all",
+  "editor.rulers": [120],
+  "editor.wordWrap": "off",
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  
+  // File Settings
+  "files.encoding": "utf8bom",
+  "files.eol": "\r\n",
+  "files.trimTrailingWhitespace": false,
+  "files.insertFinalNewline": false,
+  "files.autoSave": "off",
+
+  // HTML Formatter
+  "[html]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "html.format.wrapAttributes": "preserve-aligned",
+  "html.format.wrapLineLength": 120,
+  "html.format.contentUnformatted": "pre,code,textarea",
+  "html.format.extraLiners": "head, body, /html",
+  "html.format.unformatted": "wbr",
+
+  // JavaScript/TypeScript Formatter
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "javascript.format.semicolons": "insert",
+  "javascript.format.insertSpaceAfterCommaDelimiter": true,
+  "javascript.format.insertSpaceAfterConstructor": false,
+  "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+  "javascript.format.insertSpaceAfterKeywordsInControlFlow": true,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+  "javascript.format.insertSpaceAfterSemicolonInForStatements": true,
+  "javascript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+  "javascript.format.insertSpaceBeforeFunctionParenthesis": false,
+  "javascript.format.placeOpenBraceOnNewLineForFunctions": false,
+  "javascript.format.placeOpenBraceOnNewLineForControlBlocks": false,
+  "javascript.preferences.quoteStyle": "single",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.format.semicolons": "insert",
+  "typescript.format.insertSpaceAfterCommaDelimiter": true,
+  "typescript.format.insertSpaceAfterConstructor": false,
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+  "typescript.format.insertSpaceAfterKeywordsInControlFlow": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+  "typescript.format.insertSpaceAfterSemicolonInForStatements": true,
+  "typescript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+  "typescript.format.insertSpaceBeforeFunctionParenthesis": false,
+  "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
+  "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.useAliasesForRenames": false,
+  "typescript.preferences.useAliasesForRenames": false,
+
+  // CSS/LESS/SCSS Formatter
+  "[css]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "[less]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "[scss]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "css.format.enable": true,
+  "css.format.newlineBetweenRules": true,
+  "css.format.newlineBetweenSelectors": true,
+  "css.format.spaceAroundSelectorSeparator": true,
+  "css.format.braceStyle": "collapse",
+  "css.format.preserveNewLines": true,
+  "css.format.maxPreserveNewLines": 2,
+  "less.format.enable": true,
+  "scss.format.enable": true,
+
+  // JSON Formatter
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "json.format.enable": true,
+  "json.format.keepLines": true,
+
+  // XML Formatter
+  "[xml]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "redhat.vscode-xml"
+  },
+  "xml.format.enabled": true,
+  "xml.format.preserveEmptyContent": true,
+  "xml.format.preserveAttributeLineBreaks": true,
+  "xml.format.maxLineWidth": 120,
+  "xml.format.spaceBeforeEmptyCloseTag": true,
+  "xml.format.splitAttributes": true,
+  "xml.format.splitAttributesIndentSize": 4,
+  "xml.format.joinCDATALines": false,
+  "xml.format.joinCommentLines": false,
+
+  // Python Formatter
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "python.formatting.provider": "autopep8",
+  "python.formatting.autopep8Args": [
+    "--max-line-length=120",
+    "--indent-size=4"
+  ],
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.flake8Enabled": false,
+  "python.linting.flake8Args": [
+    "--max-line-length=120"
+  ],
+
+  // Markdown Formatter
+  "[markdown]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+    "editor.wordWrap": "on"
+  },
+  "markdown.preview.breaks": true,
+  "markdown.extension.toc.levels": "2..6",
+  "markdown.extension.toc.unorderedList.marker": "-",
+
+  // YAML Formatter
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "yaml.format.enable": true,
+  "yaml.format.singleQuote": false,
+  "yaml.format.bracketSpacing": true,
+  "yaml.format.printWidth": 120,
+  "yaml.format.proseWrap": "preserve",
+
+  // ESLint Configuration
+  "eslint.enable": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact",
+    "html"
+  ],
+  "eslint.options": {
+    "extensions": [".js", ".ts", ".html", ".jsx", ".tsx"]
+  },
+
+  // Prettier Configuration (if using Prettier)
+  "prettier.enable": true,
+  "prettier.printWidth": 120,
+  "prettier.tabWidth": 4,
+  "prettier.useTabs": false,
+  "prettier.semi": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.bracketSpacing": true,
+  "prettier.arrowParens": "always",
+  "prettier.htmlWhitespaceSensitivity": "css",
+  "prettier.endOfLine": "crlf",
+  "prettier.embeddedLanguageFormatting": "auto",
+  "prettier.vueIndentScriptAndStyle": true,
+
+  // Vue Formatter
+  "[vue]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "octref.vetur"
+  },
+  "vetur.format.defaultFormatter.html": "prettyhtml",
+  "vetur.format.defaultFormatter.css": "prettier",
+  "vetur.format.defaultFormatter.js": "prettier",
+  "vetur.format.defaultFormatter.ts": "prettier",
+  "vetur.format.options.tabSize": 2,
+  "vetur.format.options.useTabs": false,
+  "vetur.format.scriptInitialIndent": false,
+  "vetur.format.styleInitialIndent": false,
+
+  // Editor Token and Scope
+  "editor.tokenColorCustomizations": {
+    "textMateRules": []
+  },
+
+  // Emmet Configuration
+  "emmet.includeLanguages": {
+    "vue-html": "html",
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  "emmet.syntaxProfiles": {
+    "html": {
+      "attr_quotes": "double",
+      "self_closing_tag": "xhtml"
+    }
+  },
+
+  // File Nesting and Icons
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts",
+    "*.js": "${capture}.js.map, ${capture}.min.js",
+    "*.jsx": "${capture}.js",
+    "*.tsx": "${capture}.ts",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml",
+    ".eslintrc.js": ".eslintrc.json, .eslintrc",
+    ".prettierrc": ".prettierrc.js, .prettierrc.json"
+  },
+
+  // Git Configuration
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+
+  // Workbench Settings
+  "workbench.colorTheme": "Dark+",
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.startupEditor": "none",
+  "workbench.editor.tabSizing": "shrink",
+
+  // Files to Exclude
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": false
+  },
+
+  // Search Exclude
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/dist": true,
+    "**/build": true
+  },
+
+  // Auto Save Configuration
+  "files.autoSaveDelay": 1000,
+
+  // Breadcrumbs
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.filePath": "hierarchical",
+  "breadcrumbs.symbolPath": "hierarchical",
+  "breadcrumbs.showArrays": true,
+  "breadcrumbs.showBooleans": true,
+  "breadcrumbs.showClasses": true,
+  "breadcrumbs.showConstants": true,
+  "breadcrumbs.showConstructors": true,
+  "breadcrumbs.showEnums": true,
+  "breadcrumbs.showFields": true,
+  "breadcrumbs.showFunctions": true,
+  "breadcrumbs.showInterfaces": true,
+  "breadcrumbs.showMethods": true,
+  "breadcrumbs.showModules": true,
+  "breadcrumbs.showNamespaces": true,
+  "breadcrumbs.showNull": true,
+  "breadcrumbs.showNumbers": true,
+  "breadcrumbs.showObjects": true,
+  "breadcrumbs.showOperators": true,
+  "breadcrumbs.showPackages": true,
+  "breadcrumbs.showProperties": true,
+  "breadcrumbs.showStrings": true,
+  "breadcrumbs.showStructs": true,
+  "breadcrumbs.showTypeParameters": true,
+  "breadcrumbs.showVariables": true,
+
+  // Suggestion Settings
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.showSnippets": true,
+  "editor.suggest.showClasses": true,
+  "editor.suggest.showFunctions": true,
+  "editor.suggest.showVariables": true,
+  "editor.suggestSelection": "first",
+  "editor.snippetSuggestions": "top",
+
+  // Folding
+  "editor.folding": true,
+  "editor.foldingStrategy": "auto",
+  "editor.foldingMaximumRegions": 5000,
+  "editor.showFoldingControls": "always",
+  "editor.foldingHighlight": true,
+  "editor.foldingImportsByDefault": false,
+
+  // Parameter Hints
+  "editor.parameterHints.enabled": true,
+  "editor.parameterHints.cycle": true,
+
+  // Quick Suggestions
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "editor.quickSuggestionsDelay": 10,
+
+  // Other Editor Settings
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.hover.enabled": "on",
+  "editor.hover.delay": 300,
+  "editor.matchBrackets": "always",
+  "editor.guides.bracketPairs": true,
+  "editor.guides.indentation": true,
+  "editor.linkedEditing": true,
+  "editor.occurrencesHighlight": "singleFile",
+  "editor.renderLineHighlight": "all",
+  "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?"
+
+  // Note: Some advanced formatting rules from Codestyle.xml (like Rider-specific C++ formatting)
+  // cannot be directly translated to VS Code settings. For those, you might need:
+  // - C++: Use clang-format with a .clang-format file
+  // - Advanced JS/TS rules: Use ESLint + Prettier with custom config files
+  // - EditorConfig: Create a .editorconfig file from your editorconfig.txt
+}

@@ -1,0 +1,185 @@
+﻿@if(request()) {
+<div class="flex flex-col gap-4 p-2 animate-fadein">
+
+  <div class="flex flex-wrap items-center justify-between gap-4 border-b-2 border-slate-100 pb-2">
+    <div class="flex flex-col">
+      <span class="text-[10px] font-black text-rose-700 uppercase tracking-widest">Clearance Reference</span>
+      <h2 class="m-0 text-3xl font-black text-slate-900 tracking-tighter">#{{request().requestId}}</h2>
+      <p class="m-0 text-[10px] text-slate-400 font-bold uppercase mt-1">
+        Received: {{request().createdAt | date:'mediumDate'}}
+      </p>
+    </div>
+
+    <div class="flex flex-col items-end gap-2">
+      <p-tag [severity]="getStatusSeverity(request().status)"
+             [value]="clearanceService.getStatusLabel(request().status)"
+             styleClass="px-4 py-1.5 uppercase text-[10px] font-black tracking-widest rounded border-none" />
+
+      <span class="text-[9px] font-black uppercase tracking-tighter"
+            [class]="isPaymentVerified() ? 'text-emerald-600' : 'text-rose-500'">
+        {{ isPaymentVerified() ? 'Payment Verified' : 'Awaiting Payment' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-5">
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Student Information</h3>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[9px] font-black text-slate-400 uppercase">ID Number</label>
+              <div class="text-sm font-mono font-bold text-rose-700">{{request().studentId}}</div>
+            </div>
+            @if (request().year) {
+            <div>
+              <label class="block text-[9px] font-black text-slate-400 uppercase">Year Level</label>
+              <div class="text-sm font-bold text-slate-700">{{request().year}}{{getYearOrdinal(request().year!)}} Year
+              </div>
+            </div>
+            }
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase">Full Name</label>
+            <div class="text-sm font-bold text-slate-800 uppercase">{{request().studentName}}</div>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase">Program</label>
+            <div class="text-sm font-bold text-slate-700">{{request().course}}</div>
+          </div>
+          @if (request().year) {
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase">Year Level</label>
+            <div class="text-sm font-bold text-slate-700">{{request().year}}{{getYearOrdinal(request().year!)}} Year
+            </div>
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="lg:col-span-7">
+      <section>
+        <h3 class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Departmental Status</h3>
+        <div class="divide-y divide-slate-100 border-t border-b border-slate-100">
+          @for (approval of getFilteredApprovals(); track approval.id) {
+          @if(approval.office !== getMappedOffice()) {
+          <div class="py-1 flex items-center justify-between">
+            <div>
+              <span
+                    class="text-[11px] font-black text-slate-800 uppercase tracking-tight">{{clearanceService.getOfficeDisplay(approval.office)}}</span>
+              @if (approval.status === 'APPROVED') {
+              <div class="text-[9px] text-slate-400 uppercase font-bold">
+                Signed By: {{approval.signedBy}}
+              </div>
+              }
+            </div>
+            <div>
+              <span class="block text-[10px] text-right font-black uppercase tracking-widest"
+                    [class]="approval.status === 'APPROVED' ? 'text-emerald-400' : 
+                    approval.status === 'ON_HOLD' ? 'text-rose-700' : 'text-slate-400'">
+                {{
+                approval.status === 'APPROVED' ? 'CLEARED' :
+                approval.status === 'ON_HOLD' ? 'ON HOLD' : approval.status
+                }}
+              </span>
+              @if (approval.status === 'APPROVED') {
+              <div class="text-[9px] text-slate-400 uppercase font-bold">
+                {{approval.signedOn | date: 'mediumDate'}}
+              </div>
+              }
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section>
+    <div class="flex mb-2 gap-3">
+      <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+        Documents for Release
+      </h3>
+      <div class="border-b-2 my-auto flex-1 border-slate-100"></div>
+      <label class=" text-[10px] block font-black text-slate-400 uppercase">Request Type:
+        <span class="text-slate-700">{{clearanceService.getTypeDisplay(request().type)}}</span></label>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+         [@expandCollapse]="showAll() ? 'expanded' : 'collapsed'">
+      @for (doc of request().documentList; track doc.id) {
+      <div
+           class=" flex items-center gap-3 p-3 bg-white border border-slate-100 rounded shadow-sm hover:border-rose-100
+         transition-colors">
+        <div class="flex-none w-8 h-8 bg-slate-50 flex items-center justify-center rounded border border-slate-100">
+          <i class="pi pi-file-pdf text-rose-700 text-xs"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[10px] font-bold text-slate-600 uppercase tracking-tight leading-none">{{doc.name}}</span>
+        </div>
+      </div>
+      } @empty {
+      <div class="col-span-full p-4 border-2 border-dashed border-slate-100 rounded text-center">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">No documents attached to this request</span>
+      </div>
+      }
+    </div>
+
+    @if (request().documentList.length > 3) {
+    <button
+            (click)="showAll.set(!showAll())"
+            class="mt-3 w-full py-2 border border-dashed border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+      @if (!showAll()) {
+      <span class="text-rose-600">+{{ request().documentList.length - 3 }} more documents</span>
+      <i class="pi pi-chevron-down text-[8px] text-rose-600"></i>
+      } @else {
+      <span class="text-rose-600">See less</span>
+      <i class="pi pi-chevron-up text-[8px] text-rose-600"></i>
+      }
+    </button>
+    }
+  </section>
+
+
+  <div class="flex items-center justify-end gap-3 border-t border-slate-100">
+
+    @if (getOfficeApproval(); as officeDetails) {
+    <div
+         class="w-full p-5 bg-slate-50 border border-slate-100 rounded-lg flex flex-wrap items-start justify-between gap-4">
+      <div class="space-y-1">
+        <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-rose-700">
+          Your Office Action: {{clearanceService.getOfficeDisplay(officeDetails.office)}}
+        </h3>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold text-slate-600 uppercase">Status:</span>
+          <p-tag [severity]="getApprovalSeverity(officeDetails.status)"
+                 [value]="this.clearanceService.getApprovalStatus(officeDetails.status)"
+                 styleClass="text-[9px] font-black px-3 py-1 uppercase" />
+        </div>
+      </div>
+
+      @if (officeDetails.status === 'APPROVED') {
+      <div class="text-right">
+        <label class="block text-[9px] font-black text-slate-400 uppercase mb-0.5">Signed By</label>
+        <div class="text-[11px] font-bold text-slate-700 uppercase">{{officeDetails.signedBy}}</div>
+        <div class="text-[9px] text-slate-400 uppercase font-bold">{{officeDetails.signedOn | date: 'mediumDate'}}</div>
+      </div>
+      } @else if (canApprove()) {
+      <div class="max-w-md text-right">
+        <p-button [label]="officeDetails.status === 'ON_HOLD' ? officeDetails.remarks ? 'View Remarks': 'Add Remarks' : 'Mark Deficient'"
+                  [text]="true"
+                  styleClass="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-700"
+                  (onClick)="handleOnHold()" />
+        <p-button [label]="currentUserRole() === 'Cashier' ? 'Verify & Approve' : officeDetails.status === 'ON_HOLD' ? 'Resolve & Sign' : 'Sign Off'"
+                  styleClass="!bg-rose-700 !border-rose-700 hover:!bg-rose-800 rounded px-8 py-3 font-black text-[11px] uppercase tracking-widest shadow-lg"
+                  (onClick)="handleOnApprove()" />
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+}

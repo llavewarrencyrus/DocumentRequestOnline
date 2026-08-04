@@ -1,0 +1,49 @@
+﻿<form #userForm="ngForm" class="flex flex-col gap-4 p-2 animate-fadein">
+  <!-- Username (only for create mode) -->
+  @if (mode() === 'create') {
+  <div>
+    <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
+      Username <span class="text-rose-500">*</span>
+    </label>
+    <input type="text" pInputText [(ngModel)]="formData.username" name="username" class="w-full" required minlength="3">
+  </div>
+  }
+
+  <div>
+    <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Role <span
+            class="text-rose-500">*</span></label>
+    <p-select
+              appendTo="body"
+              [options]="roleOptions"
+              [(ngModel)]="formData.role"
+              name="role"
+              (onChange)="onRoleChange()"
+              optionLabel="label"
+              placeholder="Select a role"
+              class="w-full"
+              required />
+  </div>
+  @if (formData.role?.value === 'Director') {
+  <div>
+    <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Department <span
+            class="text-rose-500">*</span></label>
+    <p-select
+              appendTo="body"
+              [options]="departmentOptions"
+              [(ngModel)]="formData.departmentId"
+              name="departmentId"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select Department"
+              class="w-full"
+              required />
+  </div>
+  }
+
+  @if(formData.role?.value !== 'Director') {
+  <div>
+    <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Assigned Office</label>
+    <input type="text" pInputText [value]="formData.office?.label || 'None'" class="w-full bg-slate-50" readonly>
+  </div>
+  }
+</form>

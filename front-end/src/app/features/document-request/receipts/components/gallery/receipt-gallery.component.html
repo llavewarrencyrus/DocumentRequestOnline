@@ -1,0 +1,107 @@
+<p-dialog [visible]="this.receiptService.displayReceiptGallery().show"
+    (visibleChange)="this.receiptService.closeReceiptGalleryDialog()" [modal]="true" [maximizable]="true"
+    [draggable]="false" [resizable]="false" [closable]="true" [closeOnEscape]="true" [showHeader]="false" styleClass="receipt-viewer-dialog"
+    maskStyleClass="bg-black/90 backdrop-blur-sm">
+    @if(selectedRequestForReceipt()){
+    <div class="relative h-screen w-screen flex flex-col overflow-hidden bg-transparent">
+        <div
+            class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md border border-white/10">
+                    <i class="pi pi-receipt text-white text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-white font-semibold text-lg leading-tight">{{ this.selectedReceiptName }}</h2>
+                    <p class="text-white/60 text-xs">{{ this.selectedReceiptType }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Receipt counter and navigation -->
+                @if (selectedRequestForReceipt()!.receipts.length > 1){
+                <div
+                    class="flex items-center gap-2 mr-2 bg-black/40 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/10">
+                    <button pButton icon="pi pi-chevron-left" (click)="previousReceipt()"
+                        [disabled]="this.currentReceiptIndex === 0"
+                        class="p-button-rounded p-button-text !text-white hover:!bg-white/10 !w-8 !h-8"
+                        pTooltip="Previous" tooltipPosition="bottom">
+                    </button>
+
+                    <span class="text-white/80 text-sm">
+                        Page {{ currentReceiptIndex + 1 }} / {{ this.selectedRequestForReceipt()!.receipts.length }}
+                    </span>
+
+                    <button pButton icon="pi pi-chevron-right" (click)="nextReceipt()"
+                        [disabled]="currentReceiptIndex === this.selectedRequestForReceipt()!.receipts.length - 1"
+                        class="p-button-rounded p-button-text !text-white hover:!bg-white/10 !w-8 !h-8" pTooltip="Next"
+                        tooltipPosition="bottom">
+                    </button>
+                </div>
+                }
+
+                <button pButton icon="pi pi-download" label="Download" (click)="downloadCurrentReceipt()"
+                    class="p-button-rounded p-button-text !text-white hover:!bg-white/10 transition-all">
+                </button>
+                <button pButton icon="pi pi-times" (click)="closeReceiptViewer()"
+                    class="p-button-rounded p-button-text !text-white !bg-white/10 hover:!bg-white/20 !w-10 !h-10">
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-grow flex items-center justify-center relative overflow-hidden">
+            @if (this.selectedReceiptType?.startsWith('image/')){
+            <div
+                class="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 bg-black/40 backdrop-blur-md text-white/80 px-4 py-2 rounded-full text-xs flex items-center gap-2 border border-white/10 pointer-events-none">
+                <i class="pi pi-info-circle"></i>
+                Scroll to zoom • Drag to move
+            </div>
+            <div class="w-full h-full cursor-move" id="panzoom-parent">
+                <div class="w-full h-full flex items-center justify-center">
+                    <img [src]="selectedReceiptUrl" id="receipt-image"
+                        class="w-full max-h-[85vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform"
+                        [alt]="selectedReceiptName">
+                </div>
+            </div>
+            }
+            @if (this.selectedReceiptType === 'application/pdf' && this.selectedReceiptUrl){
+            <div class="w-full h-full pt-20">
+                <pdf-viewer
+                    [src]="selectedReceiptUrl"
+                    [render-text]="true"
+                    [original-size]="true"
+                    [fit-to-page]="true"
+                    class="display-block mx-100 h-full custom-scroll" />
+            </div>
+            }
+            @if (!this.selectedReceiptUrl){
+            <div class="flex flex-col items-center gap-4 text-white/50">
+                <p-progressSpinner styleClass="!w-12 !h-12"></p-progressSpinner>
+                <p>Opening document...</p>
+            </div>
+            }
+        </div>
+
+        <!-- Zoom controls for images -->
+        @if (this.panZoomInstance && this.selectedReceiptType?.startsWith('image/')){
+        <div
+            class="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-50 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10">
+            <button pButton icon="pi pi-plus" (click)="panZoomInstance.zoomIn()"
+                class="p-button-rounded p-button-text !text-white hover:!bg-white/20 !w-12 !h-12" pTooltip="Zoom In"
+                tooltipPosition="left"></button>
+
+            <div class="h-px bg-white/10 mx-2"></div>
+
+            <button pButton icon="pi pi-refresh" (click)="panZoomInstance.reset()"
+                class="p-button-rounded p-button-text !text-white hover:!bg-white/20 !w-12 !h-12" pTooltip="Reset"
+                tooltipPosition="left"></button>
+
+            <div class="h-px bg-white/10 mx-2"></div>
+
+            <button pButton icon="pi pi-minus" (click)="panZoomInstance.zoomOut()"
+                class="p-button-rounded p-button-text !text-white hover:!bg-white/20 !w-12 !h-12" pTooltip="Zoom Out"
+                tooltipPosition="left"></button>
+        </div>
+        }
+    </div>
+    }
+</p-dialog>

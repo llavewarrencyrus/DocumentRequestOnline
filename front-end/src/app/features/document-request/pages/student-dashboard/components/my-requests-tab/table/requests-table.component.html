@@ -1,0 +1,238 @@
+<div class="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="bg-gray-50 text-gray-700">
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">ID</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">Document Type</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">Qty</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">Date Requested</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">Status</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap">Note</th>
+        <th class="p-3 text-left font-semibold overflow-hidden whitespace-nowrap"></th>
+      </tr>
+    </thead>
+    <tbody #tableRows>
+      @for(r of filteredRequests(); track r.id; let i = $index){
+      <tr id="request-{{ r.id }}"
+          class="border-t cursor-pointer hover:bg-gray-50 transition"
+          (click)="viewRequestDetails(r)"
+          (contextmenu)="onContextMenu($event, r)">
+        <td class="p-3 font-mono text-rose-600 font-semibold">
+          #{{ r.id }}
+        </td>
+        <td class="p-3 text-gray-800 max-w-[400px] truncate">{{ r.documentsDisplayName }}</td>
+        <td class="p-3 text-gray-800">{{ r.quantity }}</td>
+        <td class="p-3 text-gray-600">{{ requestService.formatDate(r.dateRequested) }}</td>
+        <td class="p-3">
+          <span [class]="requestService.getStatusColor(r.status)"
+                class="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+            {{ requestService.getStatusLabel(r.status) }}
+          </span>
+        </td>
+        <td class="p-3">
+          <!-- Reason/Note Column - Clickable for declined requests -->
+          @if (r.status === 'Declined'){
+          <div class="flex items-center gap-2 cursor-pointer hover:bg-red-50 p-2 rounded-lg transition"
+               (click)="$event.stopPropagation(); viewDeclineReason({id: r.id, documents: r.documentsDisplayName, reason: r.declineReason})">
+            <i class="pi pi-exclamation-circle text-red-500"></i>
+            <span class="text-sm text-red-700 truncate max-w-[200px]">
+              {{ r.declineReason || 'View reason' }}
+            </span>
+            <i class="pi pi-chevron-right text-xs text-red-400"></i>
+          </div>
+          }
+          @if (r.status === 'ACTION_REQUIRED'){
+          <div class="flex items-center gap-2 cursor-pointer hover:bg-red-50 p-2 rounded-lg transition"
+               (click)="$event.stopPropagation(); viewClearanceDetails(r)">
+            <i class="pi pi-exclamation-triangle text-red-500"></i>
+            <span class="text-sm text-red-700 truncate max-w-[200px]">
+              View Clearance
+            </span>
+            <i class="pi pi-chevron-right text-xs text-red-400"></i>
+          </div>
+          }
+          @if (r.status === 'Completed'){
+          <div class="flex items-center gap-2 p-2 text-green-600">
+            <i class="pi pi-check-circle"></i>
+            <span class="text-sm">
+              {{ r.dateApproved ? 'Completed on ' + requestService.formatDate(r.dateApproved) :
+              'Completed' }}
+            </span>
+          </div>
+          }
+          @if ([
+          'Pending',
+          'Approved',
+          'Processing',
+          'UNDER_REVIEW',
+          'Available for Claiming'].includes(r.status)){
+          <div class="flex items-center gap-2 p-2 text-gray-600">
+            <i [class]="getRequestNoteIcon(r) + ' text-gray-500'"></i>
+            <span class="text-sm">
+              @if(r.claimDate){
+              <ng-container>
+                Claim date: {{ requestService.formatDate(r.claimDate) }}
+              </ng-container>
+              }
+            </span>
+          </div>
+          }
+        </td>
+        <td class="p-3">
+          <div class="grid grid-cols-6 gap-3">
+            <!-- Receipt uploaded indicator -->
+            <div class="col-span-4">
+              @if (r.hasReceipt){
+              <p-tag severity="success">
+                <div class="flex flex-wrap items-center text-xs">
+                  <span class="whitespace-nowrap"> {{r.receiptCount || 1}} Receipt(s) </span>
+                  Uploaded
+                </div>
+              </p-tag>
+              }
+            </div>
+            <!-- Action Menu Button -->
+            <button pButton
+                    type="button"
+                    icon="pi pi-ellipsis-v"
+                    class="p-button-rounded p-button-text p-button-plain col-span-2"
+                    (click)=" $event.stopPropagation(); openMenu($event, r)"
+                    pTooltip="Actions"
+                    tooltipPosition="top">
+            </button>
+          </div>
+        </td>
+      </tr>
+      }
+      @if (filteredRequests().length === 0){
+      <tr>
+        <td class="p-6 text-center text-gray-500 italic" colspan="7">
+          <div class="flex flex-col items-center gap-2">
+            <i class="pi pi-info-circle text-2xl text-gray-400"></i>
+            <span>No {{ selectedStatusFilter() }} requests found.</span>
+            @if (selectedStatusFilter() === 'active'){
+            <span class="text-xs text-gray-400">
+              Switch to "Active" tab to see your pending requests
+            </span>
+            }
+          </div>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- Mobile Cards - Fixed Actions Section -->
+<div class="md:hidden space-y-3">
+  @for (r of filteredRequests(); track r.id; let i = $index; ){
+  <div class="bg-white border border-gray-200 rounded-lg p-4 active:bg-gray-50 shadow-sm">
+    <div class="flex justify-between items-start mb-2">
+      <span class="text-xs font-mono text-rose-600 font-bold">#{{ r.id }}</span>
+      <span [class]="requestService.getStatusColor(r.status)"
+            class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+        {{ r.status }}
+      </span>
+    </div>
+    <h4 class="font-bold text-gray-900">{{ r.documentsDisplayName }}</h4>
+    <p class="text-xs text-gray-500 mb-1">
+      Requested on {{ requestService.formatDate(r.dateRequested) }} •
+      Qty: {{ r.quantity }} •
+      {{ getDocumentCount(r.documents) }}
+    </p>
+
+    <span class="text-xs text-gray-600">
+      <i class="pi pi-calendar mr-1"></i> {{ getRequestNote(r) }}
+    </span>
+
+    <div class="pt-3 border-t border-gray-100">
+      <!-- Action Buttons for Mobile -->
+      <div class="flex flex-wrap gap-2">
+        <!-- View Details Button (always visible) -->
+        <button pButton
+                type="button"
+                icon="pi pi-eye"
+                label="Details"
+                class="p-button-outlined p-button-sm"
+                (click)="viewRequestDetails(r)">
+        </button>
+
+        <!-- View Clearance Details (only for UNDER_REVIEW status) -->
+        @if (r.status !== 'Pending' && r.needsClearance && r.status != 'Declined'){
+        <button pButton
+                type="button"
+                icon="pi pi-file-check"
+                label="Clearance"
+                class="p-button-outlined p-button-sm"
+                (click)="viewClearanceDetails(r)">
+        </button>
+        }
+
+        <!-- Upload Receipt (only for Pending status) -->
+        @if (r.status === 'Pending'){
+        <button pButton
+                type="button"
+                icon="pi pi-upload"
+                label="Upload"
+                class="p-button-outlined p-button-sm"
+                (click)="openReceiptUpload(r)">
+        </button>
+        }
+
+        <!-- View Receipts (only if has receipt) -->
+        @if (r.hasReceipt){
+        <button pButton
+                type="button"
+                icon="pi pi-file-pdf"
+                label="Receipts"
+                class="p-button-outlined p-button-sm"
+                (click)="viewReceipts(r.id)">
+        </button>
+        }
+
+        <!-- Cancel Request (only for Pending without receipt) -->
+        @if (r.status === 'Pending' && !r.hasReceipt){
+        <button pButton
+                type="button"
+                icon="pi pi-times"
+                label="Cancel"
+                class="p-button-outlined p-button-danger p-button-sm"
+                (click)="confirmCancelRequest(r)">
+        </button>
+        }
+
+        <!-- Decline reason button -->
+        @if (r.status === 'Declined'){
+        <button pButton
+                type="button"
+                icon="pi pi-exclamation-circle"
+                label="Reason"
+                class="p-button-outlined p-button-danger p-button-sm"
+                (click)="viewDeclineReason({id: r.id, documents: r.documentsDisplayName, reason: r.declineReason})">
+        </button>
+        }
+      </div>
+
+      <!-- Receipt uploaded indicator (non-clickable) -->
+      @if (r.status && r.hasReceipt && !(r.status === 'Pending' || r.status === 'Declined' || r.status ===
+      'UNDER_REVIEW')){
+      <div class="mt-2 text-xs text-green-600 font-bold flex items-center gap-1">
+        <i class="pi pi-check-circle"></i> {{ r.receiptCount || 1 }} Receipt(s) uploaded
+      </div>
+      }
+    </div>
+  </div>
+  }
+  @if (filteredRequests().length === 0){
+  <div class="text-center py-10 text-gray-500">
+    <i class="pi pi-inbox text-3xl mb-2"></i>
+    <p>No {{selectedStatusFilter()}} requests.</p>
+  </div>
+  }
+</div>
+
+<!-- Action Menu -->
+<p-menu #actionMenu [model]="menuItems" [popup]="true" appendTo="body"></p-menu>
+
+<!-- Context Menu -->
+<p-contextMenu [model]="contextMenuItems" [target]="tableRows"></p-contextMenu>

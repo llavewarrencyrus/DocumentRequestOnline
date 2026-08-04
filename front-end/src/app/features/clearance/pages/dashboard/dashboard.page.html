@@ -1,0 +1,41 @@
+<!-- clearance/pages/dashboard/dashboard.page.html -->
+<div class="min-h-screen bg-[#f8fafc] p-4 md:p-8">
+  <!-- Master Dialog with View Switching -->
+  <app-master-dialog
+                     [(visible)]="showMasterDialog"
+                     [config]="dialogConfig" />
+
+  <div class="max-w-8xl mx-auto px-4 md:px-8 space-y-8">
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+          Clearance Dashboard
+        </h1>
+        <p class="text-slate-500 text-sm">
+          Manage and monitor clearance requests
+        </p>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div>
+      <app-stats [stats]="statsItems" />
+    </div>
+
+    <!-- Clearance Table Component -->
+    <clearance-table
+                     [clearanceRequests]="clearanceRequests"
+                     [loading]="loading"
+                     [totalRecords]="totalRecords"
+                     [currentPage]="currentPage"
+                     [pageSize]="pageSize"
+                     [currentUserRole]="currentUserRole"
+                     [getMappedOffice]="getMappedOffice()"
+                     (refresh)="refreshData()"
+                     (pageChange)="onPageChange($event)"
+                     (filterChange)="onFilterChange($event)"
+                     (viewDetails)="viewDetails($event)"
+                     (openApproval)="openApprovalDialog($event)"
+                     (markDeficient)="openMarkDeficient($event)" />
+  </div>
+</div>

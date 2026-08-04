@@ -1,0 +1,24 @@
+<p-dialog header="Payment Receipts" [visible]="isVisible()" (visibleChange)="closeDialog()" [modal]="true"
+          [style]="{ width: '600px' }" [draggable]="false" [resizable]="false" class="!rounded-xl">
+  <div class="sm:p-4">
+    <div class="mb-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+      <p class="flex items-start gap-2">
+        <i class="pi pi-info-circle mt-0.5 flex-shrink-0"></i>
+        <span>
+          This request has {{ selectedRequestReceipts().receipts.length }} receipt(s). Click on any
+          receipt to view.
+        </span>
+      </p>
+    </div>
+    <receipt-list [receipts]="selectedRequestReceipts().receipts" [canDelete]="canDelete()"
+                  (onDelete)="removeReceipt($event)"></receipt-list>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end">
+      <button pButton label="Close" icon="pi pi-times" (click)="closeDialog()"
+              class="p-button-text !rounded-lg">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

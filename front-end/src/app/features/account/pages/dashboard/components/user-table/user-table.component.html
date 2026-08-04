@@ -1,0 +1,156 @@
+﻿<div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+  <!-- Filters Section -->
+  <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div class="w-full">
+        <app-table-filters
+                           [(search)]="searchInput"
+                           [(select)]="selectItems"
+                           [(date)]="dates"
+                           (onFilter)="onFilterChange($event)" />
+      </div>
+      <div class="flex items-center w-full lg:w-auto">
+        <button
+                pButton
+                icon="pi pi-refresh"
+                (click)="onRefresh()"
+                class="p-button-text p-button-secondary !rounded-xl"
+                pTooltip="Refresh data"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <p-table
+           [value]="filteredUsers"
+           [lazy]="true"
+           [loading]="loading()"
+           [paginator]="true"
+           [rows]="pageSize()!"
+           [first]="(currentPage()! - 1) * pageSize()!"
+           [totalRecords]="totalRecords()!"
+           [rowsPerPageOptions]="[10, 20, 50]"
+           [showCurrentPageReport]="true"
+           (onPage)="onPageChange($event)"
+           responsiveLayout="stack"
+           breakpoint="960px"
+           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+           styleClass="p-datatable-hoverable-rows">
+    <ng-template pTemplate="header">
+      <tr class="!bg-transparent">
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1">Username</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1">Role</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1">Office</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold text-center">
+          <div class="flex items-center justify-center gap-1">Status</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1">Last Login</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1">Created</div>
+        </th>
+        <th class="!bg-slate-50/50 !py-4 text-slate-600 font-semibold">
+          <div class="flex items-center gap-1"> </div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr
+          class="group transition-colors hover:bg-slate-50/80 context-menu-target"
+          (click)="onRowClick(user)"
+          (contextmenu)="onRowContextMenu($event, user)">
+        <td>
+          <div class="flex items-center gap-3">
+            <div
+                 class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center text-white text-sm font-bold">
+              {{user.username.charAt(0).toUpperCase()}}
+            </div>
+            <div class="flex flex-col">
+              <span class="font-bold text-slate-900">{{user.username}}</span>
+              <span class="text-xs text-slate-500">ID: {{user.id}}</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <p-tag
+                 [value]="(user.role === 'Director') ? ([1,2,3,4,5].includes(user.departmentId)) ? 'Principal' : 'Dean' : user.role"
+                 [severity]="$any(getRoleSeverity(user.role))"
+                 [icon]="getRoleIcon(user.role)"
+                 class="whitespace-nowrap">
+          </p-tag>
+        </td>
+        <td>
+          <div class="flex flex-col">
+            <span class="text-sm text-slate-700">{{getOffice(user.office, user.departmentId) || '—'}}</span>
+          </div>
+        </td>
+        <td class="text-center">
+          <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap"
+                [ngClass]="{
+              'bg-emerald-50 text-emerald-700 border-emerald-200': user.isActive,
+              'bg-rose-50 text-rose-700 border-rose-200': !user.isActive
+            }">
+            <span
+                  class="w-1.5 h-1.5 rounded-full mr-1.5 inline-block"
+                  [ngClass]="{
+                'bg-emerald-500': user.isActive,
+                'bg-rose-500': !user.isActive
+              }"></span>
+            {{user.isActive ? 'Active' : 'Inactive'}}
+          </span>
+        </td>
+        <td>
+          <div class="text-sm text-slate-600">
+            <i class="pi pi-clock text-[10px] mr-1"></i>
+            {{formatDate(user.lastLogin)}}
+          </div>
+        </td>
+        <td>
+          <div class="text-sm text-slate-600">
+            <i class="pi pi-calendar text-[10px] mr-1"></i>
+            {{formatDate(user.createdAt)}}
+          </div>
+        </td>
+        <td class="text-right">
+          <div class="flex justify-center gap-1">
+            <button
+                    pButton
+                    icon="pi pi-ellipsis-v"
+                    (click)="onActionMenuClick($event, user)"
+                    class="p-button-rounded p-button-text p-button-sm !text-slate-600"
+                    pTooltip="Actions"
+                    type="button">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">
+          <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+            <i class="pi pi-inbox text-5xl mb-4 opacity-20"></i>
+            <p class="text-lg font-medium text-slate-600">No users found</p>
+            <p class="text-sm text-slate-500">No matching users found</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Context Menu -->
+<p-contextmenu #rowContextMenu [model]="contextMenuItems"></p-contextmenu>
+
+<!-- Action Menu (3-dot menu) -->
+<p-menu #actionMenu [model]="contextMenuItems" [popup]="true"></p-menu>

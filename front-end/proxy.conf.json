@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://api.arc.ubaguio.edu",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": ""
+    }
+  }
+}

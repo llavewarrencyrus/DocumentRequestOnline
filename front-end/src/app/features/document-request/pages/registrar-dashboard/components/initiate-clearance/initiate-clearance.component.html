@@ -1,0 +1,91 @@
+﻿<div class="flex flex-col gap-6 p-2">
+  <!-- Header Section (Matched to your Section Header style) -->
+  <div class="flex flex-col">
+    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 mb-0">
+      Select Clearance Type
+    </h3>
+    <span class="text-[11px] text-slate-500 font-medium">
+      Select the type of document you require for your clearanceprocess.
+    </span>
+  </div>
+
+  <!-- Selection List -->
+  <div class="flex flex-col gap-3">
+
+    <!-- Regular Card -->
+    <div
+         (click)="onTypeSelected('REGULAR')"
+         class="group relative p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer"
+         [class]="selectedCategory() === 'REGULAR' ? 'border-rose-500 bg-rose-50/20' : 'border-slate-100 bg-white hover:border-slate-200'">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div
+               [class]="'flex items-center justify-center w-10 h-10 rounded border transition-colors ' + 
+            (selectedCategory() === 'REGULAR' ? 'bg-white border-rose-200 text-rose-600' : 'bg-slate-50 border-slate-100 text-slate-400')">
+            <i class="pi pi-file text-lg"></i>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Category</label>
+            <div class="text-sm font-bold text-slate-900 uppercase tracking-tight">Regular Clearance</div>
+            <p class="text-[11px] text-slate-500 font-medium">Standard clearance for active students.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <i
+             [class]="selectedCategory() === 'REGULAR' ? 'pi pi-check-circle text-lg text-rose-600' : 'pi pi-circle text-lg text-slate-200'"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newly Graduate Card -->
+    <div
+         (click)="onTypeSelected('NEWLY_GRADUATE')"
+         class="group relative p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer"
+         [class]="selectedCategory() === 'NEWLY_GRADUATE' ? 'border-rose-500 bg-rose-50/20' : 'border-slate-100 bg-white hover:border-slate-200'">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div
+               [class]="'flex items-center justify-center w-10 h-10 rounded border transition-colors ' + 
+            (selectedCategory() === 'NEWLY_GRADUATE' ? 'bg-white border-rose-200 text-rose-600' : 'bg-slate-50 border-slate-100 text-slate-400')">
+            <i class="pi pi-graduation-cap text-lg"></i>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Category</label>
+            <div class="text-sm font-bold text-slate-900 uppercase tracking-tight">Newly Graduate</div>
+            <p class="text-[11px] text-slate-500 font-medium">Final clearance for graduating batch.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <i
+             [class]="selectedCategory() === 'NEWLY_GRADUATE' ? 'pi pi-check-circle text-lg text-rose-600' : 'pi pi-circle text-lg text-slate-200'"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer Card -->
+    <div
+         (click)="onTypeSelected('TRANSFER')"
+         class="group relative p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer"
+         [class]="selectedCategory() === 'TRANSFER' ? 'border-rose-500 bg-rose-50/20' : 'border-slate-100 bg-white hover:border-slate-200'">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div
+               [class]="'flex items-center justify-center w-10 h-10 rounded border transition-colors ' + 
+            (selectedCategory() === 'TRANSFER' ? 'bg-white border-rose-200 text-rose-600' : 'bg-slate-50 border-slate-100 text-slate-400')">
+            <i class="pi pi-directions text-lg"></i>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Category</label>
+            <div class="text-sm font-bold text-slate-900 uppercase tracking-tight">Transfer School</div>
+            <p class="text-[11px] text-slate-500 font-medium">Exit clearance for transferring students.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <i
+             [class]="selectedCategory() === 'TRANSFER' ? 'pi pi-check-circle text-lg text-rose-600' : 'pi pi-circle text-lg text-slate-200'"></i>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

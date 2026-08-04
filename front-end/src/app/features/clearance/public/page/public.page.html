@@ -1,0 +1,124 @@
+<div class="max-w-4xl mx-auto p-6 space-y-8 animate-fadein">
+  <div class="flex flex-col md:flex-row justify-between items-end border-b-2 border-slate-100 pb-6 gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-red-700">
+        <i class="pi pi-shield text-xl"></i>
+        <span class="text-xs font-black uppercase tracking-[0.2em]">University of Baguio</span>
+      </div>
+      <h1 class="text-3xl font-black text-slate-900 uppercase">Clearance Status</h1>
+      <p class="text-sm text-slate-500 font-medium">Request ID: <span
+              class="text-slate-900 font-bold">#{{data().requestId}}</span></p>
+    </div>
+
+    <div class="flex flex-col items-end gap-3">
+      <p-button
+                label="Return"
+                icon="pi pi-arrow-left"
+                [text]="true"
+                styleClass="p-0 text-slate-400 hover:text-red-700 text-xs font-bold"
+                (onClick)="goBack()" />
+      <p-tag [value]="clearanceService.getStatusLabel(data().status)" [severity]="getStatusSeverity(data().status)"
+             styleClass="px-4 py-2 text-xs font-bold rounded uppercase tracking-wider" />
+    </div>
+  </div>
+
+  @if (loading()) {
+  <div class="flex flex-col items-center justify-center py-20 gap-4">
+    <p-progressSpinner styleClass="w-12 h-12" strokeWidth="3" fill="transparent" />
+    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Loading Records...</p>
+  </div>
+  } @else if (error()) {
+  <div class="p-12 text-center bg-slate-50 rounded border border-slate-200">
+    <i class="pi pi-search text-slate-300 text-3xl mb-4"></i>
+    <h3 class="text-slate-900 font-bold">Record Not Found</h3>
+    <p class="text-slate-500 text-sm">Please ensure the Request ID is correct.</p>
+  </div>
+  } @else {
+
+  <div class="space-y-3">
+    <div
+         class="flex items-center justify-between px-4 py-2 bg-slate-900 rounded-t text-[10px] font-black text-white uppercase tracking-widest">
+      <span>Department / Office</span>
+      <span>Status</span>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-b divide-y divide-slate-100 shadow-sm">
+      @if(getStatusCashier() === 'APPROVED'){
+      @for (item of data().approvals; track item.office) {
+      @if(item.office !== 'CASHIER'){
+      <div class="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 flex items-center justify-center rounded bg-slate-50 text-slate-400">
+            <i [class]="clearanceService.getOfficeIcon(item.office) + ' text-lg'"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-800 uppercase text-sm tracking-tight">
+              {{clearanceService.getOfficeDisplay(item.office)}}</h4>
+            @if (item.status === 'APPROVED') {
+            <p class="text-[10px] text-emerald-600 font-bold">Signed: {{item.signedOn | date:'mediumDate'}}</p>
+            } @else {
+            <p class="text-[10px] text-slate-400 italic">Pending department head signature</p>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-[10px] font-black uppercase tracking-tighter"
+                [ngClass]="
+                item.status === 'APPROVED' ? 'text-emerald-600' :
+                item.status === 'ON_HOLD' ? 'text-rose-500' : 'text-slate-300'">
+            {{clearanceService.getApprovalStatus(item.status)}}
+          </span>
+          <i [class]="
+          item.status === 'APPROVED' ? 'pi pi-check-circle text-emerald-500' :
+          item.status === 'ON_HOLD' ? 'pi pi-minus text-rose-500' : 'pi pi-minus text-slate-200'"
+             class="text-lg"></i>
+        </div>
+      </div>
+      }
+      }
+      }@else {
+      <div class="flex flex-col items-center justify-center py-20 px-8 text-center bg-white border-t border-slate-50">
+        <div class="mb-5">
+          <i class="pi pi-credit-card text-slate-300 text-2xl"></i>
+        </div>
+
+        <h3 class="text-[10px] font-black text-slate-900 uppercase tracking-[0.25em] mb-3">
+          Awaiting Payment Verification
+        </h3>
+
+        <div class="h-px w-12 bg-red-700/20 mb-4"></div>
+
+        <p class="text-[13px] text-slate-500 font-medium max-w-[320px] leading-relaxed italic">
+          The departmental clearance checklist will be generated once account has been settled at the Cashier’s
+          Office.
+        </p>
+
+        <p class="mt-8 text-[10px] text-slate-300 font-bold uppercase tracking-widest">
+          Official University Status
+        </p>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+    <div class="p-6 border-l-4 border-red-700 bg-slate-50">
+      <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-2">Instructions</h4>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Wait for all departments to reach <span class="text-emerald-600 font-bold underline">APPROVED</span> status.
+        The Admissions and Records Center will automatically begin processing your request once clearance is complete.
+      </p>
+    </div>
+
+    <div class="flex flex-col justify-center items-center md:items-end text-right">
+      <p class="text-[10px] text-slate-400 font-medium">Verified Official University Record</p>
+      <p class="text-[10px] text-slate-400 font-medium italic">Timestamp: {{ data().updatedAt | date:'medium' }}</p>
+      <div class="mt-4 flex gap-2">
+        <div class="h-1 w-8 bg-red-700"></div>
+        <div class="h-1 w-4 bg-slate-200"></div>
+      </div>
+    </div>
+  </div> -->
+  }
+</div>

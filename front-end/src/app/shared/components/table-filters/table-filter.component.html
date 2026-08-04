@@ -1,0 +1,165 @@
+﻿<div class="flex flex-wrap gap-3 w-full lg:w-auto">
+  <!-- Search -->
+  @if(search()){
+  <p-inputgroup class="max-w-[300px]">
+    <input
+           id="search"
+           pInputText
+           type="text"
+           class="min-w-[250px]"
+           [(ngModel)]="search()!.query"
+           (keyup)="onSearchEnter($event)"
+           [placeholder]="search()?.placeholder" />
+    <p-inputgroup-addon>
+      <p-button
+                icon="pi pi-search"
+                (click)="onSearchSubmit()"
+                severity="secondary"
+                variant="text"
+                pTooltip="Search" />
+    </p-inputgroup-addon>
+  </p-inputgroup>
+  }
+
+  <!-- Status Filter -->
+  @if(select().length > 0){
+  @for(select of select(); track $index){
+  <p-select
+            [options]="select.options"
+            [(ngModel)]="select.selected"
+            [filter]="select.filter"
+            (onChange)="onItemChange($index)"
+            optionLabel="label"
+            appendTo="body"
+            panelStyleClass="!rounded-xl shadow-xl border-slate-100">
+    <ng-template pTemplate="selectedItem">
+      @if (select.selected) {
+      <div class="flex items-center gap-2">
+        <span class="font-medium">{{select.selected.label}}</span>
+      </div>
+      }
+    </ng-template>
+    <ng-template #dropdownicon>
+      <i [class]="select.icon ? select.icon : 'pi pi-filter'"></i>
+    </ng-template>
+  </p-select>
+  }
+  }
+
+  <!-- Date Requested Filter -->
+  @if(date().length > 0){
+  @for(date of date(); track $index){
+  <div class="flex flex-nowrap">
+    <p-floatlabel variant="on">
+      <div [id]="date.label" class="flex relative p-inputtext max-w-[250px] !rounded-br-none !rounded-tr-none">
+        <div
+             [class]="dateFrom[$index] ? !showTo ? 
+               'grid grid-cols-4 gap-2 w-[200px]' : 
+               'grid grid-cols-5 gap-2 w-[250px]' : 
+               'grid grid-cols-5 gap-2 w-[150px]'">
+          @if(!showTo){
+          <div [class]="dateFrom[$index] ? 'relative col-span-2 w-full' : 'relative col-span-5 w-full'">
+            <p-inputmask
+                         #dateMask
+                         [(ngModel)]="date.value[0]"
+                         mask="9999-99-99"
+                         [autoClear]="true"
+                         (onFocus)="showDatePopover($event, $index)"
+                         (onComplete)="onDateFromStringComplete($index)"
+                         styleClass="w-full border-none !p-0 shadow-none" />
+            <p-popover class="!p-0" #datePopover>
+              <p-datePicker
+                            [(ngModel)]="dateFrom[$index]"
+                            (onSelect)="onDateFromStringSelect($index)"
+                            inline
+                            dateFormat="yyyy-mm-dd"
+                            placeholder="Select Date"
+                            styleClass="!rounded-xl"
+                            inputStyleClass="!p-0 !border-none"
+                            panelStyleClass="border-none p-0" />
+            </p-popover>
+          </div>
+          @if(dateFrom[$index]){
+          <div class="col-span-2 flex items-center justify-center flex-nowrap">
+            <button
+                    pButton
+                    label="+ End Date"
+                    (click)="showTo = true"
+                    outlined
+                    class="border-none !p-0 w-full"></button>
+          </div>
+          }
+          }@else{
+          <div class="col-span-2 text-center w-full">
+            <p-inputmask
+                         [(ngModel)]="date.value[0]"
+                         mask="9999-99-99"
+                         [autoClear]="true"
+                         placeholder="YYYY-MM-DD"
+                         (onFocus)="showDatePopoverTo($event, $index)"
+                         (onComplete)="onDateFromStringComplete($index)"
+                         styleClass="w-full border-none !p-0 shadow-none" />
+            <p-popover class="!p-0" #datePopoverTo>
+              <p-datePicker
+                            [(ngModel)]="dateRange[$index]"
+                            (onSelect)="onDateRangeSelect($index);"
+                            selectionMode="range"
+                            inline
+                            dateFormat="YYYY-MM-DD"
+                            placeholder="Select Date"
+                            styleClass="!rounded-xl"
+                            inputStyleClass="!p-0 !border-none"
+                            panelStyleClass="border-none p-0" />
+            </p-popover>
+          </div>
+          <div class="col-span-1 flex items-center justify-center">
+            <span>To</span>
+          </div>
+          <div class="col-span-2 text-center w-full">
+            <p-inputmask
+                         [(ngModel)]="date.value[1]"
+                         mask="9999-99-99"
+                         [autoClear]="true"
+                         placeholder="YYYY-MM-DD"
+                         autofocus
+                         (onFocus)="showDatePopoverTo($event, $index)"
+                         (onComplete)="onDateToStringComplete($index)"
+                         styleClass="w-full border-none !p-0 shadow-none" />
+          </div>
+          }
+        </div>
+      </div>
+      <label [for]="date.label">{{date.label}}</label>
+    </p-floatlabel>
+    <div class="p-inputtext !p-0 !rounded-tl-none !rounded-bl-none border-l-0">
+      @if(!dateFrom[$index]){
+      <button
+              pButton
+              icon="pi pi-calendar"
+              (click)="focusOnDateMask($event, $index); showDatePopover($event,$index);"
+              class="p-button-text p-button-sm !text-slate-400 h-full w-full hover:bg-slate-100"></button>
+      }@else{
+      <button
+              pButton
+              icon="pi pi-times"
+              (click)="clearDateFilter($index)"
+              class="p-button-text p-button-sm !text-slate-400 h-full w-full hover:bg-slate-100"></button>
+      }
+    </div>
+  </div>
+  }
+  }
+  <div class="flex items-center gap-2 w-full lg:w-auto">
+    @if(hasAnyFilter()) {
+    <button
+            pButton
+            icon="pi pi-filter-slash"
+            pTooltip="Clear all filters"
+            showDelay="1000"
+            (click)="clearAllFilters()"
+            severity="danger"
+            outlined
+            class="!rounded-ls h-full"></button>
+    }
+  </div>
+</div>
