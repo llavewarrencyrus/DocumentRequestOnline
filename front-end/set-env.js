@@ -1,5 +1,5 @@
 ﻿const fs = require("fs");
-const targetPath = "./src/environments/enviroment.production.ts";
+const targetPath = "src/environments/enviroment.production.ts";
 
 const envConfigFile = `export const environment = {
   production: true,
