@@ -1,5 +1,4 @@
-<div
-     class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-md">
     <div class="flex flex-col items-center">
       <div class="h-20 w-20 bg-[#FF0000] text-white rounded-full flex items-center justify-center shadow-md mb-4">
@@ -26,13 +25,8 @@
           </label>
           <p-iconfield>
             <p-inputicon styleClass="pi pi-user" />
-            <input
-                   pInputText
-                   id="username"
-                   formControlName="username"
-                   placeholder="Enter your ID #"
-                   class="w-full py-3 border-slate-300 focus:border-[#FF0000]"
-                   [fluid]="true" />
+            <input pInputText id="username" formControlName="username" placeholder="Enter your ID #"
+              class="w-full py-3 border-slate-300 focus:border-[#FF0000]" [fluid]="true" />
           </p-iconfield>
           <small class="text-red-600" *ngIf="username?.invalid && (username?.dirty || username?.touched)">
             {{ getUsernameError() }}
@@ -45,14 +39,10 @@
           </label>
           <div class="relative w-full">
             <i
-               class="pi pi-calendar absolute left-3 top-1/2 -translate-y-1/2 z-10 text-slate-400 pointer-events-none"></i>
+              class="pi pi-calendar absolute left-3 top-1/2 -translate-y-1/2 z-10 text-slate-400 pointer-events-none"></i>
 
-            <p-inputMask
-                         id="birthdate"
-                         mask="99/99/9999"
-                         formControlName="birthdate"
-                         placeholder="MM/DD/YYYY"
-                         styleClass="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-[#FF0000] focus:border-[#FF0000] outline-none transition-all" />
+            <p-inputMask id="birthdate" mask="99/99/9999" formControlName="birthdate" placeholder="MM/DD/YYYY"
+              styleClass="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-[#FF0000] focus:border-[#FF0000] outline-none transition-all" />
           </div>
           <small class="text-red-600" *ngIf="birthdate?.invalid && (birthdate?.dirty || birthdate?.touched)">
             Birthdate is required
@@ -63,15 +53,9 @@
           <label for="password" class="text-xs font-bold uppercase text-slate-600">
             Password <span class="text-red-600">*</span>
           </label>
-          <p-password
-                      id="password"
-                      formControlName="password"
-                      [toggleMask]="true"
-                      [feedback]="false"
-                      placeholder="Enter your password"
-                      styleClass="w-full"
-                      inputStyleClass="w-full py-3 border-slate-300 focus:border-[#FF0000]"
-                      [fluid]="true" />
+          <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false"
+            placeholder="Enter your password" styleClass="w-full"
+            inputStyleClass="w-full py-3 border-slate-300 focus:border-[#FF0000]" [fluid]="true" />
           <small class="text-red-600" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
             {{ getPasswordError() }}
           </small>
@@ -79,22 +63,17 @@
 
         <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full" />
 
-        <p-button
-                  type="submit"
-                  label="Sign In as Student"
-                  icon="pi pi-sign-in"
-                  [loading]="isLoading"
-                  [disabled]="loginForm.invalid"
-                  styleClass="w-full py-3 mt-2 bg-[#FF0000] border-none hover:bg-red-700" />
+        <p-button type="submit" label="Sign In as Student" icon="pi pi-sign-in" [loading]="isLoading"
+          [disabled]="loginForm.invalid" styleClass="w-full py-3 mt-2 bg-[#FF0000] border-none hover:bg-red-700" />
       </form>
 
-      @if(!environment.production){
       <p-divider align="center" styleClass="my-8">
         <span class="text-xs font-bold text-slate-400">DEMO ACCESS</span>
       </p-divider>
 
-      <div class="p-4 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-colors"
-           (click)="fillDemoCredentials()">
+      <div
+        class="p-4 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-colors"
+        (click)="fillDemoCredentials()">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="text-2xl">{{ demoAccount.icon }}</span>
@@ -106,7 +85,6 @@
           <i class="pi pi-arrow-right text-slate-400"></i>
         </div>
       </div>
-      }
 
       <div class="mt-8 text-center">
         <p class="text-sm text-slate-600">

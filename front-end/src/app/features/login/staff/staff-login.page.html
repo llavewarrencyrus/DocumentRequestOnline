@@ -16,7 +16,7 @@
 
       <div class="mb-8 flex justify-center">
         <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-[#FF0000] border border-red-100">
+          class="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-[#FF0000] border border-red-100">
           <i class="pi pi-user-edit mr-2"></i>
           Staff & Admin Access
         </span>
@@ -30,13 +30,8 @@
           </label>
           <p-iconfield>
             <p-inputicon styleClass="pi pi-user" />
-            <input
-                   id="username"
-                   pInputText
-                   formControlName="username"
-                   placeholder="e.g., arc.staff"
-                   class="w-full py-3 border-slate-300 focus:border-[#FF0000]"
-                   [fluid]="true" />
+            <input id="username" pInputText formControlName="username" placeholder="e.g., arc.staff"
+              class="w-full py-3 border-slate-300 focus:border-[#FF0000]" [fluid]="true" />
           </p-iconfield>
           <div class="text-[10px] text-slate-400 font-mono">
             Format: arc.username (e.g., arc.staff)
@@ -50,15 +45,9 @@
           <label for="password" class="text-xs font-bold uppercase text-slate-600">
             Password <span class="text-red-600">*</span>
           </label>
-          <p-password
-                      id="password"
-                      formControlName="password"
-                      [toggleMask]="true"
-                      [feedback]="false"
-                      placeholder="Enter your password"
-                      styleClass="w-full"
-                      inputStyleClass="w-full py-3 border-slate-300 focus:border-[#FF0000]"
-                      [fluid]="true" />
+          <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false"
+            placeholder="Enter your password" styleClass="w-full"
+            inputStyleClass="w-full py-3 border-slate-300 focus:border-[#FF0000]" [fluid]="true" />
           <small class="text-red-600" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
             {{ getPasswordError() }}
           </small>
@@ -66,24 +55,17 @@
 
         <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full" />
 
-        <p-button
-                  type="submit"
-                  label="Sign In as Staff"
-                  icon="pi pi-sign-in"
-                  [loading]="isLoading"
-                  [disabled]="loginForm.invalid"
-                  styleClass="w-full py-3 mt-2 bg-[#FF0000] border-none hover:bg-red-700" />
+        <p-button type="submit" label="Sign In as Staff" icon="pi pi-sign-in" [loading]="isLoading"
+          [disabled]="loginForm.invalid" styleClass="w-full py-3 mt-2 bg-[#FF0000] border-none hover:bg-red-700" />
       </form>
 
-      @if(!environment.production){
       <p-divider align="center" styleClass="my-8">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Demo Access</span>
       </p-divider>
 
       <div class="space-y-3">
-        <div *ngFor="let account of demoAccounts"
-             (click)="fillDemoCredentials(account)"
-             class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-all">
+        <div *ngFor="let account of demoAccounts" (click)="fillDemoCredentials(account)"
+          class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-100 transition-all">
           <div class="flex items-center gap-3">
             <span class="text-2xl">{{ account.icon }}</span>
             <div class="text-left">
@@ -96,7 +78,6 @@
           <i class="pi pi-chevron-right text-slate-300 text-sm"></i>
         </div>
       </div>
-      }
 
       <div class="mt-8 text-center pt-4 border-t border-slate-100">
         <p class="text-sm text-slate-600">
