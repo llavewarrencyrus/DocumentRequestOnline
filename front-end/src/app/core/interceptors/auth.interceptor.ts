@@ -19,15 +19,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (token) {
     // Start with Authorization header
     let headers: any = {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     };
 
-    if (externalToken && req.url.includes('/student/my-requests') || req.url.includes('/requests') || req.url.includes('/status') || /\/requests\/[^/]+\/status/.test(req.url)) {
-      headers['X-External-Token'] = externalToken;
-    }
-
     const authReq = req.clone({
-      setHeaders: headers
+      setHeaders: headers,
     });
 
     return next(authReq).pipe(
@@ -37,11 +33,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
           authService.clearSession();
           router.navigate(['/login/student'], {
-            queryParams: { expired: 'true' }
+            queryParams: { expired: 'true' },
           });
         }
         return throwError(() => error);
-      })
+      }),
     );
   }
 

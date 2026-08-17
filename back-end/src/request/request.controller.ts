@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, Headers, BadRequestException, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Headers,
+  BadRequestException,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { RequestService } from './request.service';
 import { CreateRequestDto } from './create-request.dto';
 import { UpdateStatusDto } from './update-status.dto';
@@ -21,23 +35,20 @@ export class RequestController {
     return {
       success: true,
       message: 'API is working correctly',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   @Get('student/my-requests')
   @HttpCode(HttpStatus.OK)
-  async findByStudentId(
-    @User() user: UserPayload,
-    @Headers('x-external-token') token: string
-  ) {
+  async findByStudentId(@User() user: UserPayload) {
     const studentId = user?.userId;
     try {
-      const requests = await this.requestService.findByStudentId(studentId, token);
+      const requests = await this.requestService.findByStudentId(studentId);
       return {
         success: true,
         data: requests,
-        count: requests.length
+        count: 5,
       };
     } catch (error) {
       console.error('Error in findByStudentId:', error);
@@ -59,7 +70,8 @@ export class RequestController {
   @Get('number/:requestNumber')
   @HttpCode(HttpStatus.OK)
   async findByRequestNumber(@Param('requestNumber') requestNumber: string) {
-    const request = await this.requestService.findByRequestNumber(requestNumber);
+    const request =
+      await this.requestService.findByRequestNumber(requestNumber);
     return {
       success: true,
       data: request,
@@ -81,10 +93,21 @@ export class RequestController {
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: string,
   ) {
-    const result = await this.requestService.findAllPaginated(externalToken, page, limit, status, search, hasReceipt, dateFrom, dateTo, sortBy, sortOrder);
+    const result = await this.requestService.findAllPaginated(
+      externalToken,
+      page,
+      limit,
+      status,
+      search,
+      hasReceipt,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+    );
     return {
       success: true,
-      ...result
+      ...result,
     };
   }
 
@@ -94,7 +117,7 @@ export class RequestController {
     const counts = await this.requestService.getRequestCounts();
     return {
       success: true,
-      data: counts
+      data: counts,
     };
   }
 
@@ -113,6 +136,7 @@ export class RequestController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createRequestDto: CreateRequestDto) {
+    console.log('Request data:', createRequestDto);
     try {
       const request = await this.requestService.create(createRequestDto);
       return {
@@ -140,10 +164,13 @@ export class RequestController {
       throw new BadRequestException('User not authenticated');
     }
 
-    if (token)
-      updateStatusDto.token = token;
+    if (token) updateStatusDto.token = token;
 
-    const request = await this.requestService.updateStatus(+id, updateStatusDto, user);
+    const request = await this.requestService.updateStatus(
+      +id,
+      updateStatusDto,
+      user,
+    );
     return {
       success: true,
       data: request,
@@ -155,7 +182,7 @@ export class RequestController {
   @HttpCode(HttpStatus.OK)
   async markClearance(
     @Param('id') id: number,
-    @Body() category: { category: string; },
+    @Body() category: { category: string },
   ) {
     const request = await this.requestService.markClearance(id, category);
     return {
@@ -172,7 +199,10 @@ export class RequestController {
     @Param('id') id: string,
     @Body() declineRequestDto: DeclineRequestDto,
   ) {
-    const request = await this.requestService.declineRequest(+id, declineRequestDto);
+    const request = await this.requestService.declineRequest(
+      +id,
+      declineRequestDto,
+    );
     return {
       success: true,
       data: request,
@@ -187,7 +217,10 @@ export class RequestController {
     @Param('id') id: string,
     @Body() removeDocumentsDto: RemoveDocumentsDto,
   ) {
-    const request = await this.requestService.removeDocumentsFromRequest(+id, removeDocumentsDto);
+    const request = await this.requestService.removeDocumentsFromRequest(
+      +id,
+      removeDocumentsDto,
+    );
     return {
       success: true,
       data: request,
@@ -208,24 +241,24 @@ export class RequestController {
       'POST /api/requests',
       'PUT /api/requests/:id/status',
       'PUT /api/requests/:id/decline',
-      'PUT /api/requests/:id/documents/remove'
+      'PUT /api/requests/:id/documents/remove',
     ];
     return {
       success: true,
       baseUrl: '/api/requests',
-      routes: routes
+      routes: routes,
     };
   }
 
   @Delete(':id')
   async deleteRequest(
     @Param('id') id: number,
-    @Query('studentId') studentId: string // Pass studentId to verify ownership
+    @Query('studentId') studentId: string, // Pass studentId to verify ownership
   ) {
     await this.requestService.deleteRequest(id, studentId);
     return {
       success: true,
-      message: 'Request cancelled successfully'
+      message: 'Request cancelled successfully',
     };
   }
 }

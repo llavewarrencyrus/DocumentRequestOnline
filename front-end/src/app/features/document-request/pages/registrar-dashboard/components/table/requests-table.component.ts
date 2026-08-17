@@ -124,6 +124,7 @@ export class RequestsTableComponent implements OnChanges {
   approveRequest = output<DocumentRequest>();
   declineRequest = output<DocumentRequest>();
   initiateClearance = output<DocumentRequest>();
+  updateStatus = output<{ request: DocumentRequest; status: DocumentRequest['status'] }>();
   editDocuments = output<DocumentRequest>();
   viewDetails = output<DocumentRequest>();
   viewClearance = output<DocumentRequest>();
@@ -210,6 +211,24 @@ export class RequestsTableComponent implements OnChanges {
         command: () => this.onDeclineRequest(request)
       },
       {
+        label: 'Mark as Processing',
+        icon: 'pi pi-sync',
+        visible: request.status === 'Approved',
+        command: () => this.onUpdateStatus(request, 'Processing')
+      },
+      {
+        label: 'Mark as Available for Claiming',
+        icon: 'pi pi-send',
+        visible: request.status === 'Processing',
+        command: () => this.onUpdateStatus(request, 'Available for Claiming')
+      },
+      {
+        label: 'Mark as Completed',
+        icon: 'pi pi-check-circle',
+        visible: request.status === 'Available for Claiming',
+        command: () => this.onUpdateStatus(request, 'Completed')
+      },
+      {
         label: 'Edit Documents',
         icon: 'pi pi-pencil',
         visible: request.status === 'Pending' && !request.hasReceipt,
@@ -288,6 +307,12 @@ export class RequestsTableComponent implements OnChanges {
   onApproveRequest(request: DocumentRequest, event?: Event): void {
     event?.preventDefault();
     this.approveRequest.emit(request);
+  }
+
+  onUpdateStatus(request: DocumentRequest, status: DocumentRequest['status'], event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.updateStatus.emit({ request, status });
   }
 
   onDeclineRequest(request: DocumentRequest, event?: Event): void {

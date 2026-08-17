@@ -875,6 +875,40 @@ export class StaffDashboardComponent implements OnInit {
       });
   }
 
+  onUpdateStatus(event: { request: DocumentRequest; status: DocumentRequest['status'] }): void {
+    const { request, status } = event;
+    this.confirmationService.confirm({
+      message: `Are you sure you want to change request #${request.id} status to "${status}"?`,
+      header: 'Update Status',
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        this.requestService.updateStatus(request.id, status)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Status Updated',
+                detail: `Request status updated to "${status}" successfully`,
+                life: 3000
+              });
+              this.loadRequestCounts();
+              this.loadRequests(false);
+            },
+            error: (error) => {
+              console.error('Error updating request status:', error);
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to update request status',
+                life: 3000
+              });
+            }
+          });
+      }
+    });
+  }
+
   closeDeclineDialog(): void {
     this.masterDialog.goBack();
   }

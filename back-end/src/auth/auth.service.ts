@@ -1,7 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, of } from 'rxjs';
 
 import { UserService } from '../user/user.service';
 
@@ -33,121 +31,45 @@ export interface UserPayload {
 
 @Injectable()
 export class AuthService {
-  private readonly externalApiUrl = process.env.EXTERNAL_API_URL;
   private readonly demoMode = process.env.DEMO_MODE === 'true';
 
   constructor(
     private jwtService: JwtService,
-    private httpService: HttpService,
     private userService: UserService,
   ) {}
 
-  async validateUser(credentials: LoginCredentials): Promise<UserPayload | null> {
-    const { username, password, birthdate } = credentials;
+  async validateUser(
+    credentials: LoginCredentials,
+  ): Promise<UserPayload | null> {
+    const { username, password } = credentials;
 
-    if (this.demoMode) {
-      const demoUserNames = ['arc.staff', 'arc.staff2', 'library.staff', 'school.director', 'accountant.staff', 'counselor.staff', 'inventory.staff', 'arc.admin'];
+    // Check demo/hardcoded accounts first
+    const demoUserNames = [
+      'arc.staff',
+      'arc.staff2',
+      'library.staff',
+      'school.director',
+      'accountant.staff',
+      'counselor.staff',
+      'inventory.staff',
+      'arc.admin',
+      'student.demo',
+      '20153953',
+      '20201234',
+    ];
 
-      if (demoUserNames.includes(username)) {
-        console.log('Demo mode is enabled');
-        return this.validateDemoUser(username, password);
-      }
+    if (demoUserNames.includes(username)) {
+      console.log('Demo/hardcoded authentication for:', username);
+      return this.validateDemoUser(username, password);
     }
 
     try {
       const user = await this.userService.findByUsername(username);
 
       if (!user) {
-        const payload: any = {
-          username,
-          password
-        };
-
-        if (birthdate) {
-          payload.birthdate = this.formatBirthdate(birthdate);
-        }
-
-        const response = await firstValueFrom(
-          this.httpService.post(`${this.externalApiUrl}/login`, payload)
-        );
-        if (!response.data || !response.data.token) {
-          return null;
-        }
-
-        const { token } = response.data;
-
-        const decoded = this.decodeToken(token);
-        let role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Student';
-        const userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-        const decodedUsername = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
-
-        if (role === 'Student' || role.includes('Student')) {
-          try {
-            const studentProfile = await this.getStudentProfile(token);
-
-            let courseId = null;
-            let courseCode = '';
-            let courseDescription = '';
-
-            if (studentProfile.course) {
-              if (typeof studentProfile.course === 'object') {
-                courseId = studentProfile.course.id || studentProfile.course.courseId;
-                courseCode = studentProfile.course.code || '';
-                courseDescription = studentProfile.course.description || studentProfile.course.name || '';
-              } else if (typeof studentProfile.course === 'number') {
-                courseId = studentProfile.course;
-              }
-            } else if (studentProfile.courseId) {
-              courseId = studentProfile.courseId;
-            } else if (studentProfile.programId) {
-              courseId = studentProfile.programId;
-            }
-            return {
-              userId,
-              username: decodedUsername,
-              role,
-              firstName: studentProfile.firstName || studentProfile.givenName || '',
-              lastName: studentProfile.lastName || studentProfile.surname || '',
-              middleName: studentProfile.middleName || studentProfile.middleInitial || '',
-              courseId: courseId ? Number(courseId) : undefined,
-              courseCode: courseCode,
-              courseDescription: courseDescription,
-              gender: studentProfile.gender || '',
-              birthDate: studentProfile.birthDate || studentProfile.birthday || '',
-              code: studentProfile.code || studentProfile.studentNumber || '',
-              years: studentProfile.years || studentProfile.yearLevel || null,
-              externalToken: token,
-            };
-          } catch (profileError) {
-            console.error('Failed to fetch student profile:', profileError);
-            return {
-              userId,
-              username: decodedUsername,
-              role,
-              externalToken: token,
-            };
-          }
-        }
-
-        let office: string = '';
-        let departmentId: number | undefined;
-
-        if (role === 'Register' || (Array.isArray(role) && role.includes('Register'))) {
-          office = 'ARC';
-          departmentId = 24;
-        }
-        return {
-          userId,
-          username: decodedUsername,
-          firstName: role,
-          lastName: '',
-          role,
-          departmentId,
-          office,
-          externalToken: token,
-        };
+        console.log('User not found in local database:', username);
+        return null;
       }
-
 
       const isValidPassword = await user.validatePassword(password);
       if (!isValidPassword) {
@@ -157,7 +79,7 @@ export class AuthService {
 
       await this.userService.updateLastLogin(user.id);
 
-      console.log('User validated successfully:', username);
+      console.log('User validated successfully locally:', username);
 
       return {
         userId: user.username,
@@ -168,13 +90,8 @@ export class AuthService {
         office: user.office || '',
         departmentId: user.departmentId || undefined,
       };
-
     } catch (error) {
       console.error('Validation failed:', error.message);
-      if (error.response) {
-        console.error('External API error response:', error.response.data);
-        console.error('External API error status:', error.response.status);
-      }
       return null;
     }
   }
@@ -215,33 +132,10 @@ export class AuthService {
     };
   }
 
-  private async getStudentProfile(token: string): Promise<any> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.externalApiUrl}/students/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 10000,
-        })
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching student profile:', error.message);
-      if (error.response) {
-        console.error('Profile API error status:', error.response.status);
-        console.error('Profile API error data:', error.response.data);
-      }
-      if (error.code === 'ECONNREFUSED') {
-        console.error('Connection refused - external API may be down');
-      }
-      throw error;
-    }
-  }
-
-  private validateDemoUser(username: string, password: string): UserPayload | null {
+  private validateDemoUser(
+    username: string,
+    password: string,
+  ): UserPayload | null {
     const demoAccounts = [
       {
         username: 'arc.staff',
@@ -252,7 +146,8 @@ export class AuthService {
         firstName: 'ARC',
         lastName: '',
         middleName: '',
-        externalToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYXJjX3N0YWZmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJhcmNfc3RhZmYiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJSZWdpc3RyYXIiLCJleHAiOjE3NzI2NzQ3NTQsImlzcyI6IkFSQyIsImF1ZCI6IkFSQyJ9.-2fBWS7Z7Ah3n0jkbv0bt3gEaJpUBEaOiZfKWBZojNk'
+        externalToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYXJjX3N0YWZmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJhcmNfc3RhZmYiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJSZWdpc3RyYXIiLCJleHAiOjE3NzI2NzQ3NTQsImlzcyI6IkFSQyIsImF1ZCI6IkFSQyJ9.-2fBWS7Z7Ah3n0jkbv0bt3gEaJpUBEaOiZfKWBZojNk',
       },
       {
         username: 'arc.staff2',
@@ -263,7 +158,8 @@ export class AuthService {
         firstName: 'ARC',
         lastName: '',
         middleName: '',
-        externalToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYXJjX3N0YWZmMiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiYXJjX3N0YWZmMiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlJlZ2lzdHJhciIsImV4cCI6MTc3MjY3NDc1NCwiaXNzIjoiQVJDIiwiYXVkIjoiQVJDIn0.fMdo-m-2YAOZfrnq3NeYO-689541ZgU5nANtZcJgoTs'
+        externalToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYXJjX3N0YWZmMiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiYXJjX3N0YWZmMiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlJlZ2lzdHJhciIsImV4cCI6MTc3MjY3NDc1NCwiaXNzIjoiQVJDIiwiYXVkIjoiQVJDIn0.fMdo-m-2YAOZfrnq3NeYO-689541ZgU5nANtZcJgoTs',
       },
       {
         username: 'cashier.staff',
@@ -346,12 +242,31 @@ export class AuthService {
         courseCode: 'BSIT',
         courseDescription: 'Bachelor of Science in Information Technology',
         code: '2020-12345',
+        gender: 'MALE',
+        birthDate: '2000-01-01',
         years: 4,
-      }
+      },
+      {
+        username: '20201234',
+        password: 'student123',
+        userId: '20201234',
+        role: 'Student',
+        firstName: 'Demo',
+        lastName: 'Student',
+        middleName: 'Test',
+        courseId: 1,
+        courseCode: 'BSIT',
+        courseDescription: 'Bachelor of Science in Information Technology',
+        code: '20201234',
+        gender: 'MALE',
+        birthDate: '2002-11-02',
+        years: 4,
+      },
     ];
 
     const user = demoAccounts.find(
-      account => account.username === username && account.password === password
+      (account) =>
+        account.username === username && account.password === password,
     );
 
     if (!user) return null;
@@ -362,33 +277,5 @@ export class AuthService {
       userWithoutPassword.role = 'Registrar';
     }
     return userWithoutPassword;
-  }
-
-  private formatBirthdate(birthdate?: string): string | undefined {
-    if (!birthdate) return undefined;
-
-    if (birthdate.includes('T')) {
-      return birthdate;
-    }
-
-    return `${birthdate}T00:00:00.000Z`;
-  }
-
-  private decodeToken(token: string): any {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid token format');
-      }
-
-      const payload = parts[1];
-      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const paddedBase64 = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
-      const decodedPayload = Buffer.from(paddedBase64, 'base64').toString('utf-8');
-      return JSON.parse(decodedPayload);
-    } catch (error) {
-      console.error('Token decode error:', error);
-      throw new UnauthorizedException('Invalid token format');
-    }
   }
 }

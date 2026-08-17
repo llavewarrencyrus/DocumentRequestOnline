@@ -1,9 +1,22 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
-import { RequestService, DocumentOption, Course, CreateDocumentRequest } from '@features/document-request/request.service';
+import {
+  RequestService,
+  DocumentOption,
+  Course,
+  CreateDocumentRequest,
+} from '@features/document-request/request.service';
 import { CreateDocumentRequest as StudentCreateDocumentRequest } from '@features/document-request/student-request.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -22,9 +35,9 @@ import { StudentRequestService } from '@features/document-request/student-reques
     RouterModule,
     ButtonModule,
     IconFieldModule,
-    InputIconModule
+    InputIconModule,
   ],
-  templateUrl: './document-request-form.page.html'
+  templateUrl: './document-request-form.page.html',
 })
 export class DocumentRequestFormPage implements OnInit, OnDestroy {
   @ViewChild('requestForm') requestForm!: NgForm;
@@ -69,8 +82,16 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   needsClearance: boolean = false;
   categoryOptions = [
     { label: 'Regular Request', value: 'REGULAR', icon: 'pi pi-file' },
-    { label: 'Newly Graduate', value: 'NEWLY_GRADUATE', icon: 'pi pi-graduation-cap' },
-    { label: 'Transfer to another School', value: 'TRANSFER', icon: 'pi pi-external-link' }
+    {
+      label: 'Newly Graduate',
+      value: 'NEWLY_GRADUATE',
+      icon: 'pi pi-graduation-cap',
+    },
+    {
+      label: 'Transfer to another School',
+      value: 'TRANSFER',
+      icon: 'pi pi-external-link',
+    },
   ];
 
   // Holidays
@@ -95,7 +116,7 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
     'For Personal Records',
     'For Government Requirement',
     'For Abroad',
-    'Others'
+    'Others',
   ];
 
   documentOptions: DocumentOption[] = [];
@@ -151,35 +172,41 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
 
     forkJoin({
       documents: this.requestService.getDocumentOptions(),
-      courses: this.requestService.getCourses()
-    }).pipe(
-      finalize(() => this.loading = false),
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (result) => {
-        this.documentOptions = result.documents;
-        this.filteredDocuments = [...result.documents];
+      courses: this.requestService.getCourses(),
+    })
+      .pipe(
+        finalize(() => (this.loading = false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (result) => {
+          this.documentOptions = result.documents;
+          this.filteredDocuments = [...result.documents];
 
-        this.courseOptions = result.courses;
-        this.filteredCourseOptions = [...result.courses];
+          this.courseOptions = result.courses;
+          this.filteredCourseOptions = [...result.courses];
 
-        if (this.selectedCourseId) {
-          const selectedCourse = this.courseOptions.find(c => c.id === this.selectedCourseId);
-          if (selectedCourse) {
-            this.courseSearchTerm = this.toProperCase(selectedCourse.description);
+          if (this.selectedCourseId) {
+            const selectedCourse = this.courseOptions.find(
+              (c) => c.id === this.selectedCourseId,
+            );
+            if (selectedCourse) {
+              this.courseSearchTerm = this.toProperCase(
+                selectedCourse.description,
+              );
+            }
           }
-        }
-      },
-      error: (error) => {
-        console.error('Error loading reference data:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load required data. Please refresh the page.',
-          life: 3000
-        });
-      }
-    });
+        },
+        error: (error) => {
+          console.error('Error loading reference data:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load required data. Please refresh the page.',
+            life: 3000,
+          });
+        },
+      });
   }
 
   loadUserInfo(): void {
@@ -195,7 +222,7 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
         requestorCourseId: user.courseId || null,
         email: '',
         phone: '',
-        year: user.years || null
+        year: user.years || null,
       };
 
       this.selectedCourseId = user.courseId || null;
@@ -235,7 +262,9 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
 
   toProperCase(text: string): string {
     if (!text) return '';
-    return text.toLowerCase().replace(/(?:^|\s)\S/g, char => char.toUpperCase());
+    return text
+      .toLowerCase()
+      .replace(/(?:^|\s)\S/g, (char) => char.toUpperCase());
   }
 
   getYearOrdinal(year: number): string {
@@ -249,18 +278,18 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
     this.holidayLoadAttempted = true;
 
     fetch(`https://date.nager.at/api/v3/publicholidays/${year}/PH`)
-      .then(response => {
+      .then((response) => {
         if (!response.ok) throw new Error('Failed to fetch holidays');
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         data.forEach((holiday: any) => {
           this.holidays.add(holiday.date);
         });
         this.holidaysLoaded = true;
         this.updateEstimatedClaimDate();
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Failed to load holidays:', error);
         this.holidaysLoaded = true;
       });
@@ -275,7 +304,7 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
     const today = new Date();
     let maxWorkingDays = 0;
 
-    this.selectedDocuments.forEach(doc => {
+    this.selectedDocuments.forEach((doc) => {
       if (doc.processingPeriod > maxWorkingDays) {
         maxWorkingDays = doc.processingPeriod;
       }
@@ -332,10 +361,11 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
     if (!searchTerm) {
       this.filteredCourseOptions = [...this.courseOptions];
     } else {
-      this.filteredCourseOptions = this.courseOptions.filter(course =>
-        course.description.toLowerCase().includes(searchTerm) ||
-        course.code.toLowerCase().includes(searchTerm) ||
-        course.id.toString().includes(searchTerm)
+      this.filteredCourseOptions = this.courseOptions.filter(
+        (course) =>
+          course.description.toLowerCase().includes(searchTerm) ||
+          course.code.toLowerCase().includes(searchTerm) ||
+          course.id.toString().includes(searchTerm),
       );
     }
     this.showCourseDropdown = true;
@@ -369,13 +399,13 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
 
   getCourseDisplayName(courseId: number | null | undefined): string {
     if (!courseId) return '';
-    const course = this.courseOptions.find(c => c.id === courseId);
+    const course = this.courseOptions.find((c) => c.id === courseId);
     return course?.description || courseId.toString();
   }
 
   getCourseCode(courseId: number | null | undefined): string {
     if (!courseId) return '';
-    const course = this.courseOptions.find(c => c.id === courseId);
+    const course = this.courseOptions.find((c) => c.id === courseId);
     return course?.code || '';
   }
 
@@ -403,28 +433,34 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   }
 
   hasFirstCopyDocument(): boolean {
-    return this.selectedDocuments.some(doc => this.isFirstCopyDocument(doc));
+    return this.selectedDocuments.some((doc) => this.isFirstCopyDocument(doc));
   }
 
   hasCAVDocument(): boolean {
-    return this.selectedDocuments.some(doc => this.isCAVDocument(doc));
+    return this.selectedDocuments.some((doc) => this.isCAVDocument(doc));
   }
 
   getFirstCopyDocuments(): DocumentOption[] {
-    return this.selectedDocuments.filter(doc => this.isFirstCopyDocument(doc));
+    return this.selectedDocuments.filter((doc) =>
+      this.isFirstCopyDocument(doc),
+    );
   }
 
   getNonFirstCopyDocuments(): DocumentOption[] {
-    return this.selectedDocuments.filter(doc => !this.isFirstCopyDocument(doc));
+    return this.selectedDocuments.filter(
+      (doc) => !this.isFirstCopyDocument(doc),
+    );
   }
 
   getDocumentFeeNote(doc: DocumentOption): string {
     if (!doc) return '';
 
     if (this.isFirstCopyDocument(doc)) {
-      if (doc.id === 2 || doc.id === 3) { // OTR
+      if (doc.id === 2 || doc.id === 3) {
+        // OTR
         return `First copy free. Succeeding copies: ₱${doc.fee} each`;
-      } else if (doc.id === 4) { // SF10
+      } else if (doc.id === 4) {
+        // SF10
         return 'First copy free. Succeeding copies: ₱100-200 each (varies by level)';
       }
     } else if (this.isCAVDocument(doc)) {
@@ -457,17 +493,17 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   filterDocuments(): void {
     const searchTerm = this.documentSearchTerm.toLowerCase();
     if (!searchTerm) {
-      this.filteredDocuments = this.documentOptions.filter(doc =>
-        !this.selectedDocumentIds.has(doc.id)
+      this.filteredDocuments = this.documentOptions.filter(
+        (doc) => !this.selectedDocumentIds.has(doc.id),
       );
     } else {
-      this.filteredDocuments = this.documentOptions.filter(doc =>
-        !this.selectedDocumentIds.has(doc.id) && (
-          doc.name.toLowerCase().includes(searchTerm) ||
-          doc.description?.toLowerCase().includes(searchTerm) ||
-          doc.category.toLowerCase().includes(searchTerm) ||
-          doc.processingPeriod.toString().includes(searchTerm)
-        )
+      this.filteredDocuments = this.documentOptions.filter(
+        (doc) =>
+          !this.selectedDocumentIds.has(doc.id) &&
+          (doc.name.toLowerCase().includes(searchTerm) ||
+            doc.description?.toLowerCase().includes(searchTerm) ||
+            doc.category.toLowerCase().includes(searchTerm) ||
+            doc.processingPeriod.toString().includes(searchTerm)),
       );
     }
   }
@@ -475,7 +511,9 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   toggleDocumentSelection(document: DocumentOption): void {
     if (this.selectedDocumentIds.has(document.id)) {
       this.selectedDocumentIds.delete(document.id);
-      this.selectedDocuments = this.selectedDocuments.filter(d => d.id !== document.id);
+      this.selectedDocuments = this.selectedDocuments.filter(
+        (d) => d.id !== document.id,
+      );
     } else {
       this.selectedDocumentIds.add(document.id);
       this.selectedDocuments.push(document);
@@ -514,7 +552,11 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   }
 
   onDocumentKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Backspace' && this.documentSearchTerm === '' && this.selectedDocuments.length > 0) {
+    if (
+      event.key === 'Backspace' &&
+      this.documentSearchTerm === '' &&
+      this.selectedDocuments.length > 0
+    ) {
       this.removeDocument(this.selectedDocuments.length - 1);
     }
   }
@@ -542,16 +584,20 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   filterPurposes(): void {
     const searchTerm = this.purposeSearchTerm.toLowerCase();
     if (!searchTerm) {
-      this.filteredPurposes = this.purposeOptions.filter(purpose =>
-        !this.selectedPurposesSet.has(purpose)
+      this.filteredPurposes = this.purposeOptions.filter(
+        (purpose) => !this.selectedPurposesSet.has(purpose),
       );
     } else {
-      this.filteredPurposes = this.purposeOptions.filter(purpose =>
-        !this.selectedPurposesSet.has(purpose) &&
-        purpose.toLowerCase().includes(searchTerm)
+      this.filteredPurposes = this.purposeOptions.filter(
+        (purpose) =>
+          !this.selectedPurposesSet.has(purpose) &&
+          purpose.toLowerCase().includes(searchTerm),
       );
 
-      if (searchTerm && !this.filteredPurposes.some(p => p.toLowerCase() === searchTerm)) {
+      if (
+        searchTerm &&
+        !this.filteredPurposes.some((p) => p.toLowerCase() === searchTerm)
+      ) {
         this.filteredPurposes.push(`Add custom: "${searchTerm}"`);
       }
     }
@@ -560,7 +606,9 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
 
   togglePurposeSelection(purpose: string): void {
     if (purpose.startsWith('Add custom: ')) {
-      const customPurpose = purpose.replace('Add custom: "', '').replace('"', '');
+      const customPurpose = purpose
+        .replace('Add custom: "', '')
+        .replace('"', '');
       if (!this.selectedPurposesSet.has(customPurpose)) {
         this.selectedPurposesSet.add(customPurpose);
         this.selectedPurposesList.push(customPurpose);
@@ -568,7 +616,9 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
     } else {
       if (this.selectedPurposesSet.has(purpose)) {
         this.selectedPurposesSet.delete(purpose);
-        this.selectedPurposesList = this.selectedPurposesList.filter(p => p !== purpose);
+        this.selectedPurposesList = this.selectedPurposesList.filter(
+          (p) => p !== purpose,
+        );
       } else {
         this.selectedPurposesSet.add(purpose);
         this.selectedPurposesList.push(purpose);
@@ -586,7 +636,9 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
 
   addPurposeFromDropdown(purposeText: string): void {
     if (purposeText.startsWith('Add custom: ')) {
-      const customPurpose = purposeText.replace('Add custom: "', '').replace('"', '');
+      const customPurpose = purposeText
+        .replace('Add custom: "', '')
+        .replace('"', '');
       if (!this.isPurposeSelected(customPurpose)) {
         this.togglePurposeSelection(customPurpose);
         this.showPurposeDropdown = false;
@@ -622,7 +674,11 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
   }
 
   onPurposeKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Backspace' && this.purposeSearchTerm === '' && this.selectedPurposesList.length > 0) {
+    if (
+      event.key === 'Backspace' &&
+      this.purposeSearchTerm === '' &&
+      this.selectedPurposesList.length > 0
+    ) {
       this.removePurpose(this.selectedPurposesList.length - 1);
     }
     if (event.key === 'Enter' && this.purposeSearchTerm.trim()) {
@@ -705,7 +761,10 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
       contact: this.contactNo,
       requestCategory: this.requestCategory,
       needsClearance: this.needsClearance,
-      documents: this.selectedDocuments.map(doc => ({ id: doc.id, name: doc.name })),
+      documents: this.selectedDocuments.map((doc) => ({
+        id: doc.id,
+        name: doc.name,
+      })),
       quantity: this.quantity,
       purpose: this.purpose,
       estimatedClaimDate: this.estimatedClaimDate,
@@ -713,10 +772,13 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
       year: this.studentInfo.year ?? 1,
     };
 
-    this.studentRequestService.create(requestData)
+    console.log('REQUEST DATA', requestData);
+
+    this.studentRequestService
+      .create(requestData)
       .pipe(
-        finalize(() => this.isSubmitting = false),
-        takeUntil(this.destroy$)
+        finalize(() => (this.isSubmitting = false)),
+        takeUntil(this.destroy$),
       )
       .subscribe({
         next: (newRequest) => {
@@ -724,7 +786,7 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
             severity: 'success',
             summary: 'Request Submitted Successfully',
             detail: `Your request #${newRequest.id} has been submitted. Total Fee: ₱${this.calculatedPrice.toFixed(2)}`,
-            life: 2000
+            life: 2000,
           });
 
           setTimeout(() => {
@@ -734,13 +796,14 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Submission error:', error);
           this.showError('Failed to submit request. Please try again.');
-        }
+        },
       });
   }
 
   cancel(): void {
     this.confirmationService.confirm({
-      message: 'Are you sure you want to cancel? All entered data will be lost.',
+      message:
+        'Are you sure you want to cancel? All entered data will be lost.',
       header: 'Cancel Request',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
@@ -748,17 +811,18 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
           severity: 'info',
           summary: 'Cancelled',
           detail: 'Returning to dashboard...',
-          life: 2000
+          life: 2000,
         });
         setTimeout(() => {
           this.router.navigate(['/student/dashboard']);
         }, 1000);
-      }
+      },
     });
   }
 
   isFormValid(): boolean {
-    return this.selectedDocuments.length > 0 &&
+    return (
+      this.selectedDocuments.length > 0 &&
       this.selectedPurposesList.length > 0 &&
       !!this.contactNoInput.trim() &&
       this.contactNoInput.length === 10 &&
@@ -768,7 +832,8 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
       this.year >= 1 &&
       this.year <= 5 &&
       !this.isSubmitting &&
-      !this.loading;
+      !this.loading
+    );
   }
 
   // ========== HELPER METHODS ==========
@@ -778,7 +843,7 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
       severity: 'error',
       summary: 'Validation Error',
       detail: message,
-      life: 3000
+      life: 3000,
     });
   }
 
@@ -787,30 +852,36 @@ export class DocumentRequestFormPage implements OnInit, OnDestroy {
       severity: 'success',
       summary: summary,
       detail: detail,
-      life: 4000
+      life: 4000,
     });
   }
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: Event): void {
-    if (this.documentDropdown?.nativeElement &&
+    if (
+      this.documentDropdown?.nativeElement &&
       !this.documentDropdown.nativeElement.contains(event.target) &&
       this.documentInput?.nativeElement &&
-      !this.documentInput.nativeElement.contains(event.target)) {
+      !this.documentInput.nativeElement.contains(event.target)
+    ) {
       this.showDocumentDropdown = false;
     }
 
-    if (this.purposeDropdown?.nativeElement &&
+    if (
+      this.purposeDropdown?.nativeElement &&
       !this.purposeDropdown.nativeElement.contains(event.target) &&
       this.purposeInput?.nativeElement &&
-      !this.purposeInput.nativeElement.contains(event.target)) {
+      !this.purposeInput.nativeElement.contains(event.target)
+    ) {
       this.showPurposeDropdown = false;
     }
 
-    if (this.courseDropdown?.nativeElement &&
+    if (
+      this.courseDropdown?.nativeElement &&
       !this.courseDropdown.nativeElement.contains(event.target) &&
       this.courseInput?.nativeElement &&
-      !this.courseInput.nativeElement.contains(event.target)) {
+      !this.courseInput.nativeElement.contains(event.target)
+    ) {
       this.showCourseDropdown = false;
     }
   }

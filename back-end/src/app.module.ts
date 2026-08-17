@@ -10,7 +10,6 @@ import { DocumentRequest } from './request/document-request.entity';
 import { RequestDocument } from './reference/request-document.entity';
 import { DocumentOption } from './reference/document-option.entity';
 import { Course } from './reference/course.entity';
-import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
 import { NotificationModule } from './notification/notification.module';
 import { Notification } from './notification/notification.entity';
@@ -53,6 +52,10 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
           ClearanceApproval,
           ClearanceLog,
         ],
+        ssl:
+          configService.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false }
+            : false,
         synchronize: configService.get('NODE_ENV') === 'development', // Set to false in production
         logging: configService.get('NODE_ENV') === 'development',
       }),
@@ -72,10 +75,6 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
       ClearanceApproval,
       ClearanceLog,
     ]),
-    HttpModule.register({
-      timeout: 10000,
-      maxRedirects: 5,
-    }),
     UserModule,
     AuthModule,
     NotificationModule,

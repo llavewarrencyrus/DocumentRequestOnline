@@ -10,7 +10,7 @@ import { CreateDocumentRequest, DocumentOption } from './student-request.model';
 import { ClearanceRequest } from '@clearance/clearance.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StudentRequestService {
   private apiUrl = environment.apiUrl;
@@ -27,16 +27,19 @@ export class StudentRequestService {
   private http = inject(HttpClient);
 
   create(request: CreateDocumentRequest): Observable<DocumentRequest> {
+    console.log('Creating request:', request);
     return this.http.post<DocumentRequest>(`${this.apiUrl}/requests`, request);
   }
 
   deleteRequest(id: number, studentId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/requests/${id}`, {
-      params: new HttpParams().set('studentId', studentId)
+      params: new HttpParams().set('studentId', studentId),
     });
   }
 
   getRequestsByStudent(): Observable<DocumentRequest[]> {
+    console.log('Getting my requests');
+    //prettier-ignore
     return this.http.get<DocumentRequest[]>(`${this.apiUrl}/requests/student/my-requests`);
   }
 
@@ -50,7 +53,7 @@ export class StudentRequestService {
   //=================== UTILITY METHODS ========================
 
   calculateTotalPrice(documents: DocumentOption[], quantity: number): number {
-    return documents.reduce((total, doc) => total + (doc.fee * quantity), 0);
+    return documents.reduce((total, doc) => total + doc.fee * quantity, 0);
   }
 
   calculateEstimatedClaimDate(documents: DocumentOption[]): Date {
@@ -63,7 +66,7 @@ export class StudentRequestService {
     const today = new Date();
     let maxDays = 21; // Default to 21 days (3 weeks)
 
-    documents.forEach(doc => {
+    documents.forEach((doc) => {
       let days = 21; // Default fallback
 
       // processingPeriod is now a number (days)

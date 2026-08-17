@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { DocumentRequest } from './document-request.entity';
@@ -10,9 +14,6 @@ import { UpdateStatusDto } from './update-status.dto';
 import { DeclineRequestDto } from './decline-request.dto';
 import { RemoveDocumentsDto } from './remove-documents.dto';
 import { NotificationService } from '../notification/notification.service';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-
 
 export interface PaginatedRequests {
   data: {
@@ -28,7 +29,7 @@ export interface PaginatedRequests {
 }
 
 export interface ExternalStatusResponse {
-  id: string,
+  id: string;
   status: string;
 }
 
@@ -44,9 +45,7 @@ export interface RequestCounts {
 
 @Injectable()
 export class RequestService {
-  private readonly externalApiUrl = process.env.EXTERNAL_API_URL;
-  private readonly demoMode = process.env.DEMO_MODE === "true";
-  private externalToken: string;
+  private readonly demoMode = process.env.DEMO_MODE === 'true';
 
   findByRequestNumber: any;
   constructor(
@@ -60,11 +59,12 @@ export class RequestService {
     private receiptRepository: Repository<Receipt>,
     private dataSource: DataSource,
     private notificationService: NotificationService,
-    private httpService: HttpService
   ) {}
 
-  private async bulkEnrichReceiptCounts(requests: DocumentRequest[]): Promise<DocumentRequest[]> {
-    const requestIds = requests.map(r => r.id);
+  private async bulkEnrichReceiptCounts(
+    requests: DocumentRequest[],
+  ): Promise<DocumentRequest[]> {
+    const requestIds = requests.map((r) => r.id);
 
     // 1. Fetch counts in one query
     const countResults = await this.receiptRepository
@@ -77,16 +77,19 @@ export class RequestService {
       .getRawMany();
 
     // 2. Create the Lookup Map
-    const countMap = countResults.reduce((acc, row) => {
-      acc[row.requestId] = parseInt(row.count, 10);
-      return acc;
-    }, {} as Record<number, number>);
+    const countMap = countResults.reduce(
+      (acc, row) => {
+        acc[row.requestId] = parseInt(row.count, 10);
+        return acc;
+      },
+      {} as Record<number, number>,
+    );
 
     // 3. Map back to the original objects
-    return requests.map(request => ({
+    return requests.map((request) => ({
       ...request,
       receiptCount: countMap[request.id] || 0,
-      hasReceipt: (countMap[request.id] || 0) > 0
+      hasReceipt: (countMap[request.id] || 0) > 0,
     }));
   }
 
@@ -94,14 +97,14 @@ export class RequestService {
     const count = await this.receiptRepository.count({
       where: {
         requestId: request.id,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
 
     return {
       ...request,
       hasReceipt: count > 0,
-      receiptCount: count
+      receiptCount: count,
     };
   }
 
@@ -115,20 +118,21 @@ export class RequestService {
     dateFrom?: string,
     dateTo?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
   ): Promise<PaginatedRequests> {
-    this.externalToken = externalToken;
-
     // Map frontend sort fields to database columns
     const sortFieldMap: Record<string, string> = {
-      'id': 'request.id',
-      'requestorLastName': 'request.requestorLastName',
-      'dateRequested': 'request.dateRequested',
-      'status': 'request.status'
+      id: 'request.id',
+      requestorLastName: 'request.requestorLastName',
+      dateRequested: 'request.dateRequested',
+      status: 'request.status',
     };
 
     // Default sort field and order
-    const sortField = sortBy && sortFieldMap[sortBy] ? sortFieldMap[sortBy] : 'request.dateRequested';
+    const sortField =
+      sortBy && sortFieldMap[sortBy]
+        ? sortFieldMap[sortBy]
+        : 'request.dateRequested';
     const order = sortOrder?.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
     const queryBuilder = this.requestRepository
@@ -143,27 +147,38 @@ export class RequestService {
 
     if (search && search.trim()) {
       const searchTerm = `%${search.trim()}%`;
-      const searchWords = search.trim().split(/\s+/).filter(word => word.length > 0);
+      const searchWords = search
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
 
       if (searchWords.length === 1) {
         // Single word search - use ILIKE for all fields
         queryBuilder.andWhere(
           '(request.id::text ILIKE :search OR ' +
-          'request.studentId ILIKE :search OR ' +
-          'request.requestorFirstName ILIKE :search OR ' +
-          'request.requestorLastName ILIKE :search OR ' +
-          'request.requestNumber ILIKE :search OR ' +
-          'request.shortCode ILIKE :search OR ' +
-          "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorMiddleName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search OR " +
-          "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search)",
-          { search: searchTerm }
+            'request.studentId ILIKE :search OR ' +
+            'request.requestorFirstName ILIKE :search OR ' +
+            'request.requestorLastName ILIKE :search OR ' +
+            'request.requestNumber ILIKE :search OR ' +
+            'request.shortCode ILIKE :search OR ' +
+            "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorMiddleName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search OR " +
+            "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search)",
+          { search: searchTerm },
         );
       } else {
         // Multi-word search - check if any word matches first name and any word matches last name
-        const firstNameConditions = searchWords.map((_, index) => `request.requestorFirstName ILIKE :word${index}`).join(' OR ');
-        const lastNameConditions = searchWords.map((_, index) => `request.requestorLastName ILIKE :word${index}`).join(' OR ');
-        const middleNameConditions = searchWords.map((_, index) => `request.requestorMiddleName ILIKE :word${index}`).join(' OR ');
-        const shortCodeConditions = searchWords.map((_, index) => `request.shortCode ILIKE :word${index}`).join(' OR ');
+        const firstNameConditions = searchWords
+          .map((_, index) => `request.requestorFirstName ILIKE :word${index}`)
+          .join(' OR ');
+        const lastNameConditions = searchWords
+          .map((_, index) => `request.requestorLastName ILIKE :word${index}`)
+          .join(' OR ');
+        const middleNameConditions = searchWords
+          .map((_, index) => `request.requestorMiddleName ILIKE :word${index}`)
+          .join(' OR ');
+        const shortCodeConditions = searchWords
+          .map((_, index) => `request.shortCode ILIKE :word${index}`)
+          .join(' OR ');
 
         const params: any = {};
         searchWords.forEach((word, index) => {
@@ -172,9 +187,9 @@ export class RequestService {
 
         queryBuilder.andWhere(
           `(${firstNameConditions} OR ${lastNameConditions} OR ${middleNameConditions} OR ${shortCodeConditions} OR ` +
-          "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorMiddleName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search OR " +
-          "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search)",
-          { ...params, search: searchTerm }
+            "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorMiddleName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search OR " +
+            "CONCAT(COALESCE(request.requestorFirstName, ''), ' ', COALESCE(request.requestorLastName, '')) ILIKE :search)",
+          { ...params, search: searchTerm },
         );
       }
     }
@@ -185,39 +200,49 @@ export class RequestService {
       if (hasReceiptBool) {
         // Filter requests that HAVE receipts
         queryBuilder.andWhere(
-          qb => `EXISTS (${qb.subQuery()
-            .select('1')
-            .from(Receipt, 'receipt')
-            .where('receipt.request_id = request.id')
-            .andWhere('receipt.isActive = :isActive')
-            .getQuery()})`,
-          { isActive: true }
+          (qb) =>
+            `EXISTS (${qb
+              .subQuery()
+              .select('1')
+              .from(Receipt, 'receipt')
+              .where('receipt.request_id = request.id')
+              .andWhere('receipt.isActive = :isActive')
+              .getQuery()})`,
+          { isActive: true },
         );
       } else {
         // Filter requests that DO NOT have receipts
         queryBuilder.andWhere(
-          qb => `NOT EXISTS (${qb.subQuery()
-            .select('1')
-            .from(Receipt, 'receipt')
-            .where('receipt.requestId = request.id')
-            .andWhere('receipt.isActive = :isActive')
-            .getQuery()})`,
-          { isActive: true }
+          (qb) =>
+            `NOT EXISTS (${qb
+              .subQuery()
+              .select('1')
+              .from(Receipt, 'receipt')
+              .where('receipt.requestId = request.id')
+              .andWhere('receipt.isActive = :isActive')
+              .getQuery()})`,
+          { isActive: true },
         );
       }
     }
 
     if (dateFrom) {
       if (dateTo) {
-        queryBuilder.andWhere('request.dateRequested >= :dateFrom', { dateFrom });
+        queryBuilder.andWhere('request.dateRequested >= :dateFrom', {
+          dateFrom,
+        });
       } else {
         // When only dateFrom is provided, filter for the entire day
         const startOfDay = new Date(dateFrom);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(dateFrom);
         endOfDay.setHours(23, 59, 59, 999);
-        queryBuilder.andWhere('request.dateRequested >= :startOfDay', { startOfDay });
-        queryBuilder.andWhere('request.dateRequested <= :endOfDay', { endOfDay });
+        queryBuilder.andWhere('request.dateRequested >= :startOfDay', {
+          startOfDay,
+        });
+        queryBuilder.andWhere('request.dateRequested <= :endOfDay', {
+          endOfDay,
+        });
       }
     }
 
@@ -232,12 +257,8 @@ export class RequestService {
       .take(limit)
       .getMany();
 
-    this.syncEligibleRequestsInBackground(items).catch(error => {
-      console.error('Background sync failed:', error);
-    });
-
     const enrichedItems = await Promise.all(
-      items.map(request => this.enrichWithReceiptInfo(request))
+      items.map((request) => this.enrichWithReceiptInfo(request)),
     );
 
     return {
@@ -248,198 +269,19 @@ export class RequestService {
           itemCount: items.length,
           itemsPerPage: limit,
           totalPages: Math.ceil(totalItems / limit),
-          currentPage: page
-        }
-      }
-    };
-  }
-
-  /**
-   * Sync eligible requests with external API in the background
-   */
-  private async syncEligibleRequestsInBackground(requests: DocumentRequest[]): Promise<void> {
-    const syncableStatuses = ['Approved', 'Processing', 'Available for Claiming'];
-    const eligibleRequests = requests.filter(request =>
-      syncableStatuses.includes(request.status) &&
-      request.shortCode
-    );
-
-    if (eligibleRequests.length === 0) {
-      return;
-    }
-
-    const concurrencyLimit = 3;
-    const chunks = this.chunkArray(eligibleRequests, concurrencyLimit);
-
-    for (const chunk of chunks) {
-      await Promise.all(
-        chunk.map(async (request) => {
-          try {
-            await this.syncSingleRequestWithExternal(request);
-          } catch (error) {
-            console.error(`Failed to sync request ${request.id} in background:`, error);
-          }
-        })
-      );
-    }
-  }
-
-  /**
-   * Sync a single request with external API
-   */
-  private async syncSingleRequestWithExternal(request: DocumentRequest): Promise<DocumentRequest | null> {
-    try {
-      const externalStatus = await this.getExternalRequestStatus(request);
-
-      if (!externalStatus) {
-        return null;
-      }
-
-      const updatedRequest = await this.updateStatusFromExternal(request, externalStatus);
-
-      return updatedRequest;
-
-    } catch (error) {
-      console.error(`Failed to sync request ${request.id}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get request status from external API
-   */
-  private async getExternalRequestStatus(request: DocumentRequest): Promise<ExternalStatusResponse | null> {
-    const authToken = this.externalToken;
-    if (!this.externalApiUrl || !authToken) {
-      console.warn('External API and Token configuration missing');
-      return null;
-    }
-
-    const externalId = request.shortCode;
-
-    if (!externalId) {
-      return null;
-    }
-
-    if (this.demoMode) {
-      const demoResponse = { id: externalId, status: 'CREATED' };
-      return demoResponse;
-    }
-
-    try {
-      const response = await fetch(`${this.externalApiUrl}/doc-requests/status?id=${encodeURIComponent(externalId)}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          currentPage: page,
         },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-
-        console.warn(`External API responded with status ${response.status} for request ${request.id}`);
-        return null;
-      }
-
-      return await response.json();
-
-    } catch (error) {
-      console.warn(`Error calling external API for request ${request.id}:`, error.message);
-      return null;
-    }
+      },
+    };
   }
 
-  /**
-   * Update local status based on external status
-   */
-  private async updateStatusFromExternal(
-    request: DocumentRequest,
-    externalStatus: ExternalStatusResponse
-  ): Promise<DocumentRequest | null> {
-    const statusMapping: Record<string, string> = {
-      'CREATED': 'Approved',
-      'PROCESSING': 'Processing',
-      'SIGNED': 'Available for Claiming',
-      'CLAIMED': 'Completed'
-    };
-
-    const externalStatusUpper = externalStatus.status?.toUpperCase();
-    let newLocalStatus = statusMapping[externalStatusUpper];
-
-    if (!newLocalStatus) {
-      newLocalStatus = 'Processing';
+  private generateShortCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'REQ-';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-
-    // Check if status actually needs to change
-    if (request.status === newLocalStatus) {
-      return request;
-    }
-
-    // Validate status transition
-    const validTransitions: Record<string, string[]> = {
-      'Approved': ['Processing'],
-      'Processing': ['Available for Claiming'],
-      'Available for Claiming': ['Completed']
-    };
-
-    const allowedNextStatuses = validTransitions[request.status] || [];
-
-    if (!allowedNextStatuses.includes(newLocalStatus)) {
-      console.log(
-        `Invalid status transition from ${request.status} to ${newLocalStatus} ` +
-        `for request ${request.id}`
-      );
-      return null;
-    }
-
-    // Update the request status
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // Update status
-      request.status = newLocalStatus as any;
-
-      // Add additional metadata based on status
-      // if (newLocalStatus === 'Available for Claiming' && !request.claimDate) {
-      //     request.claimDate = new Date();
-      // }
-
-      await queryRunner.manager.save(request);
-      await queryRunner.commitTransaction();
-
-      // Trigger notification (non-blocking)
-      // this.notificationService.createRequestStatusChangedNotification(
-      //     request.id,
-      //     request.status
-      // ).catch(error => {
-      //     console.error(`Failed to send notification for request ${request.id}:`, error);
-      // });
-
-      return request;
-
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error(`Error updating status for request ${request.id}:`, error);
-      return null;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  /**
-   * Helper method to chunk array for rate limiting
-   */
-  private chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
+    return code;
   }
 
   async getRequestCounts(): Promise<RequestCounts> {
@@ -447,19 +289,37 @@ export class RequestService {
 
     const counts = await queryBuilder
       .select('COUNT(*)', 'total')
-      .addSelect('SUM(CASE WHEN request.status = :pending THEN 1 ELSE 0 END)', 'pending')
-      .addSelect('SUM(CASE WHEN request.status = :approved THEN 1 ELSE 0 END)', 'approved')
-      .addSelect('SUM(CASE WHEN request.status = :processing THEN 1 ELSE 0 END)', 'processing')
-      .addSelect('SUM(CASE WHEN request.status = :available THEN 1 ELSE 0 END)', 'available')
-      .addSelect('SUM(CASE WHEN request.status = :completed THEN 1 ELSE 0 END)', 'completed')
-      .addSelect('SUM(CASE WHEN request.status = :declined THEN 1 ELSE 0 END)', 'declined')
+      .addSelect(
+        'SUM(CASE WHEN request.status = :pending THEN 1 ELSE 0 END)',
+        'pending',
+      )
+      .addSelect(
+        'SUM(CASE WHEN request.status = :approved THEN 1 ELSE 0 END)',
+        'approved',
+      )
+      .addSelect(
+        'SUM(CASE WHEN request.status = :processing THEN 1 ELSE 0 END)',
+        'processing',
+      )
+      .addSelect(
+        'SUM(CASE WHEN request.status = :available THEN 1 ELSE 0 END)',
+        'available',
+      )
+      .addSelect(
+        'SUM(CASE WHEN request.status = :completed THEN 1 ELSE 0 END)',
+        'completed',
+      )
+      .addSelect(
+        'SUM(CASE WHEN request.status = :declined THEN 1 ELSE 0 END)',
+        'declined',
+      )
       .setParameters({
         pending: 'Pending',
         approved: 'Approved',
         processing: 'Processing',
         available: 'Available for Claiming',
         completed: 'Completed',
-        declined: 'Declined'
+        declined: 'Declined',
       })
       .getRawOne();
 
@@ -470,7 +330,7 @@ export class RequestService {
       processing: parseInt(counts.processing) || 0,
       available: parseInt(counts.available) || 0,
       completed: parseInt(counts.completed) || 0,
-      declined: parseInt(counts.declined) || 0
+      declined: parseInt(counts.declined) || 0,
     };
   }
 
@@ -488,16 +348,11 @@ export class RequestService {
     return enrichedRequest;
   }
 
-  async findByStudentId(studentId: string, token: string): Promise<DocumentRequest[]> {
-    this.externalToken = token;
+  async findByStudentId(studentId: string): Promise<DocumentRequest[]> {
     const requests = await this.requestRepository.find({
       where: { studentId },
       relations: ['documents', 'course'],
       order: { dateRequested: 'DESC' },
-    });
-
-    await this.syncEligibleRequestsInBackground(requests).catch(error => {
-      console.error('Background sync failed:', error);
     });
 
     return this.bulkEnrichReceiptCounts(requests);
@@ -533,14 +388,16 @@ export class RequestService {
 
       const savedRequest = await queryRunner.manager.save(request);
 
-      await this.notificationService.createRequestCreatedNotification(savedRequest.id);
+      await this.notificationService.createRequestCreatedNotification(
+        savedRequest.id,
+      );
 
-      const requestDocuments = createRequestDto.documents.map(doc =>
+      const requestDocuments = createRequestDto.documents.map((doc) =>
         this.requestDocumentRepository.create({
           requestId: savedRequest.id,
           documentId: doc.id,
           documentName: doc.name,
-        })
+        }),
       );
 
       await queryRunner.manager.save(requestDocuments);
@@ -552,7 +409,9 @@ export class RequestService {
       });
 
       if (!result) {
-        throw new NotFoundException(`Request with ID ${savedRequest.id} not found after creation`);
+        throw new NotFoundException(
+          `Request with ID ${savedRequest.id} not found after creation`,
+        );
       }
       const enrichedResult = await this.enrichWithReceiptInfo(result);
       return enrichedResult;
@@ -564,24 +423,25 @@ export class RequestService {
     }
   }
 
-  async markClearance(id: number, category: { category: string; }) {
+  async markClearance(id: number, category: { category: string }) {
     const request = await this.findOne(id);
     request.needsClearance = true;
     request.requestCategory = category.category;
-    if (request.status === "Approved" || request.status === "Processing") {
+    if (request.status === 'Approved' || request.status === 'Processing') {
       request.status = 'UNDER_REVIEW';
     }
     return this.requestRepository.save(request);
   }
 
-  async updateStatus(id: number, updateStatusDto: UpdateStatusDto, user: any): Promise<DocumentRequest> {
+  async updateStatus(
+    id: number,
+    updateStatusDto: UpdateStatusDto,
+    user: any,
+  ): Promise<DocumentRequest> {
     //TODO: modify status from raw-data(backend) to presentation-data(frontend) e.g. store in db UNDER_REVIEW, present in frontend Under Review
     const request = await this.findOne(id);
 
     console.log('CURRENT USER', user);
-
-    if (updateStatusDto.token)
-      this.externalToken = updateStatusDto.token;
 
     request.status = updateStatusDto.status as any;
 
@@ -596,76 +456,24 @@ export class RequestService {
         }
       }
 
-      try {
-        const response = await this.createApprovedRequest(request);
-        if (response && response.shortCode) {
-          request.shortCode = response.shortCode;
-          request.requestNumber = response.id.toString();
-        }
-      } catch (error) {
-        console.error('Failed to call external API:', error);
-        throw new BadRequestException('Failed to sync with external system');
-      }
+      // Generate a local shortCode and retain the generated local requestNumber
+      request.shortCode = this.generateShortCode();
     }
 
     await this.requestRepository.save(request);
 
     await this.notificationService.createRequestApprovedNotification(
       id,
-      request.approvedBy
+      request.approvedBy,
     );
 
     return this.findOne(id);
   }
 
-  async createApprovedRequest(request: DocumentRequest): Promise<any> {
-    if (!this.externalApiUrl || !this.externalToken) {
-      throw new Error('External API configuration is missing');
-    }
-
-    const requestBody = {
-      docRequest: {
-        remarks: `quantity: ${request.quantity}`,
-        purpose: request.purpose || '',
-        requestorId: request.studentId,
-        requestorLastName: request.requestorLastName,
-        requestorFirstName: request.requestorFirstName,
-        requestorMiddleName: request.requestorMiddleName || '',
-        requestorCourseId: request.requestorCourseId?.toString() || '',
-        contactNo: request.contact || '',
-        emailAddress: request.email || '',
-        isOnline: true,
-        type: 'ONLINE',
-        edits: [],
-      },
-      documents: request.documents?.map(doc => doc.documentId) || []
-    };
-
-    if (this.demoMode) {
-      const id = request.requestNumber;
-      const shortCode = 'example.code';
-      const response = { ...requestBody.docRequest, id, shortCode };
-
-      return response;
-    }
-
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.externalApiUrl}/doc-requests`, requestBody, {
-          headers: {
-            'Authorization': `Bearer ${this.externalToken}`,
-            'Content-Type': 'application/json',
-          }
-        })
-      );
-      return response;
-    } catch (error) {
-      console.error('Error calling external API:', error.response?.data || error.message);
-      throw error;
-    }
-  }
-
-  async declineRequest(id: number, declineRequestDto: DeclineRequestDto): Promise<DocumentRequest> {
+  async declineRequest(
+    id: number,
+    declineRequestDto: DeclineRequestDto,
+  ): Promise<DocumentRequest> {
     const request = await this.findOne(id);
 
     if (request.status !== 'Pending') {
@@ -683,7 +491,7 @@ export class RequestService {
     await this.notificationService.createRequestDeclinedNotification(
       id,
       declineRequestDto.reason,
-      declineRequestDto.approvedBy || 'ARC Staff'
+      declineRequestDto.approvedBy || 'ARC Staff',
     );
 
     return this.findOne(id);
@@ -720,7 +528,10 @@ export class RequestService {
     }
   }
 
-  async removeDocumentsFromRequest(id: number, removeDocumentsDto: RemoveDocumentsDto): Promise<DocumentRequest> {
+  async removeDocumentsFromRequest(
+    id: number,
+    removeDocumentsDto: RemoveDocumentsDto,
+  ): Promise<DocumentRequest> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -738,21 +549,21 @@ export class RequestService {
       const requestDocuments = await queryRunner.manager.find(RequestDocument, {
         where: { requestId: id },
       });
-      const requestDocumentIds = requestDocuments.map(doc => doc.documentId);
+      const requestDocumentIds = requestDocuments.map((doc) => doc.documentId);
       const invalidIds = removeDocumentsDto.documentIds.filter(
-        docId => !requestDocumentIds.includes(docId)
+        (docId) => !requestDocumentIds.includes(docId),
       );
 
       if (invalidIds.length > 0) {
         throw new BadRequestException(
-          `Document IDs ${invalidIds.join(', ')} do not belong to request ${id}`
+          `Document IDs ${invalidIds.join(', ')} do not belong to request ${id}`,
         );
       }
 
       // Remove the specified documents
       await queryRunner.manager.delete(RequestDocument, {
         requestId: id,
-        documentId: In(removeDocumentsDto.documentIds)
+        documentId: In(removeDocumentsDto.documentIds),
       });
 
       // Append remarks to notes if provided - update only the notes field directly
@@ -763,7 +574,9 @@ export class RequestService {
           ? `${request.notes}\n${removalNote}`
           : removalNote;
 
-        await queryRunner.manager.update(DocumentRequest, id, { notes: updatedNotes });
+        await queryRunner.manager.update(DocumentRequest, id, {
+          notes: updatedNotes,
+        });
       }
 
       await queryRunner.commitTransaction();
@@ -783,7 +596,9 @@ export class RequestService {
 
     const latestRequest = await this.requestRepository
       .createQueryBuilder('request')
-      .where('request.requestNumber LIKE :pattern', { pattern: `UB-REQ-${year}${month}-%` })
+      .where('request.requestNumber LIKE :pattern', {
+        pattern: `UB-REQ-${year}${month}-%`,
+      })
       .orderBy('request.id', 'DESC')
       .getOne();
 

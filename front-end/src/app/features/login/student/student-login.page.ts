@@ -1,5 +1,10 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MessageService } from 'primeng/api';
@@ -10,15 +15,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '@src/environments/environment';
-import { IconFieldModule } from "primeng/iconfield";
-import { InputIconModule } from "primeng/inputicon";
-import { DividerModule } from "primeng/divider";
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { DividerModule } from 'primeng/divider';
 import { CalendarModule } from 'primeng/calendar';
 import { PasswordModule } from 'primeng/password';
 import { PanelModule } from 'primeng/panel';
 import { InputMaskModule } from 'primeng/inputmask';
 import { CardModule } from 'primeng/card';
-import { BadgeModule } from "primeng/badge";
+import { BadgeModule } from 'primeng/badge';
 import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MessageModule } from 'primeng/message';
@@ -44,7 +49,7 @@ import { MessageModule } from 'primeng/message';
     DatePickerModule,
     MessageModule,
   ],
-  templateUrl: './student-login.page.html'
+  templateUrl: './student-login.page.html',
 })
 export class StudentLoginComponent implements OnInit, OnDestroy {
   environment = environment;
@@ -60,10 +65,10 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
   // Demo student account
   demoAccount = {
     title: 'Student Demo',
-    username: '20153953',
+    username: '20201234',
     birthdate: '11/02/2002',
-    password: 'pangda<3',
-    icon: '🎓'
+    password: 'student123',
+    icon: '🎓',
   };
 
   private destroy$ = new Subject<void>();
@@ -74,18 +79,12 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private router: Router,
     private route: ActivatedRoute,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [
-        Validators.required,
-        Validators.pattern('^[0-9]{8,9}$')
-      ]],
+      username: ['', [Validators.required, Validators.pattern('^[0-9]{8,9}$')]],
       birthdate: ['', [Validators.required]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(3)
-      ]]
+      password: ['', [Validators.required, Validators.minLength(3)]],
     });
   }
 
@@ -99,7 +98,8 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/student/dashboard';
+    this.returnUrl =
+      this.route.snapshot.queryParams['returnUrl'] || '/student/dashboard';
   }
 
   ngOnDestroy(): void {
@@ -123,10 +123,11 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
     const credentials = {
       username: this.loginForm.get('username')?.value.trim(),
       birthdate: formattedDate,
-      password: this.loginForm.get('password')?.value
+      password: this.loginForm.get('password')?.value,
     };
 
-    this.authService.login(credentials)
+    this.authService
+      .login(credentials)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -136,7 +137,7 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.isLoading = false;
           this.handleError(error);
-        }
+        },
       });
   }
 
@@ -144,14 +145,15 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
     this.loginForm.patchValue({
       username: this.demoAccount.username,
       birthdate: this.demoAccount.birthdate,
-      password: this.demoAccount.password
+      password: this.demoAccount.password,
     });
 
     this.messageService.add({
       severity: 'info',
       summary: 'Demo Credentials Loaded',
-      detail: 'Student demo account credentials have been filled. Click Sign In to continue.',
-      life: 3000
+      detail:
+        'Student demo account credentials have been filled. Click Sign In to continue.',
+      life: 3000,
     });
   }
 
@@ -159,14 +161,15 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
     const userInfo = this.authService.getUserInfo();
 
     if (userInfo) {
-      const studentName = `${userInfo.lastName}, ${userInfo.firstName} ${userInfo.middleName}`.trim();
+      const studentName =
+        `${userInfo.lastName}, ${userInfo.firstName} ${userInfo.middleName}`.trim();
       const courseInfo = userInfo.code ? `(${userInfo.code})` : '';
 
       this.messageService.add({
         severity: 'success',
         summary: 'Login Successful',
         detail: `Welcome back, ${userInfo.firstName || userInfo.username}! ${courseInfo}`,
-        life: 2000
+        life: 2000,
       });
 
       setTimeout(() => {
@@ -182,9 +185,11 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
     console.error('Login error:', error);
 
     if (error.status === 401) {
-      this.errorMessage = 'Invalid Student ID, Birthdate, or Password. Please check your credentials and try again.';
+      this.errorMessage =
+        'Invalid Student ID, Birthdate, or Password. Please check your credentials and try again.';
     } else if (error.status === 0) {
-      this.errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+      this.errorMessage =
+        'Unable to connect to the server. Please check your internet connection.';
     } else if (error.status === 404) {
       this.errorMessage = 'Login service unavailable. Please try again later.';
     } else {
@@ -195,12 +200,12 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
       severity: 'error',
       summary: 'Login Failed',
       detail: this.errorMessage,
-      life: 5000
+      life: 5000,
     });
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
+    Object.values(formGroup.controls).forEach((control) => {
       control.markAsTouched();
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
@@ -221,13 +226,20 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
   }
 
   // Form getters
-  get username() { return this.loginForm.get('username'); }
-  get birthdate() { return this.loginForm.get('birthdate'); }
-  get password() { return this.loginForm.get('password'); }
+  get username() {
+    return this.loginForm.get('username');
+  }
+  get birthdate() {
+    return this.loginForm.get('birthdate');
+  }
+  get password() {
+    return this.loginForm.get('password');
+  }
 
   getUsernameError(): string {
     if (this.username?.errors?.['required']) return 'Student ID is required';
-    if (this.username?.errors?.['pattern']) return 'Student ID must be 8-9 digits';
+    if (this.username?.errors?.['pattern'])
+      return 'Student ID must be 8-9 digits';
     return '';
   }
 
@@ -238,7 +250,8 @@ export class StudentLoginComponent implements OnInit, OnDestroy {
 
   getPasswordError(): string {
     if (this.password?.errors?.['required']) return 'Password is required';
-    if (this.password?.errors?.['minlength']) return 'Password must be at least 3 characters';
+    if (this.password?.errors?.['minlength'])
+      return 'Password must be at least 3 characters';
     return '';
   }
 }
