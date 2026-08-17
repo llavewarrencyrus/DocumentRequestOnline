@@ -34,7 +34,7 @@ export interface LoginResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
@@ -52,7 +52,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {
     // Initialize on service creation
     setTimeout(() => this.initializeAuth());
@@ -83,43 +83,45 @@ export class AuthService {
    * Silently validate token in the background without affecting current user state
    */
   private validateTokenInBackground(token: string): void {
-    this.http.get<{ user: any; }>(`${this.apiUrl}/auth/profile`).pipe(
-      catchError(error => {
-        console.warn('Background token validation failed:', error.message);
-        return of(null);
-      })
-    ).subscribe(response => {
-      if (response?.user) {
-        console.log('Background token validation successful');
-        // Optionally update user info if something changed
-        // But don't replace the full user info with minimal profile data
-        const currentUser = this.userInfoSubject.value;
-        if (currentUser) {
-          // Only update specific fields if needed
-          // currentUser.role = response.user.role; // etc.
+    this.http
+      .get<{ user: any }>(`${this.apiUrl}/auth/profile`)
+      .pipe(
+        catchError((error) => {
+          console.warn('Background token validation failed:', error.message);
+          return of(null);
+        }),
+      )
+      .subscribe((response) => {
+        if (response?.user) {
+          console.log('Background token validation successful');
+          // Optionally update user info if something changed
+          // But don't replace the full user info with minimal profile data
+          const currentUser = this.userInfoSubject.value;
+          if (currentUser) {
+            // Only update specific fields if needed
+            // currentUser.role = response.user.role; // etc.
+          }
         }
-      }
-    });
+      });
   }
 
   /**
    * Login with credentials
    */
   login(credentials: LoginCredentials): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(
-      `${this.apiUrl}/auth/login`,
-      credentials
-    ).pipe(
-      tap(response => {
-        this.saveToken(response.access_token);
-        this.saveUserInfo(response.user);
-        this.userInfoSubject.next(response.user);
-      }),
-      catchError(error => {
-        console.error('Login error:', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          this.saveToken(response.access_token);
+          this.saveUserInfo(response.user);
+          this.userInfoSubject.next(response.user);
+        }),
+        catchError((error) => {
+          console.error('Login error:', error);
+          return throwError(() => error);
+        }),
+      );
   }
 
   /**
@@ -136,8 +138,8 @@ export class AuthService {
    * This will NOT overwrite existing user info unless you explicitly update it
    */
   getProfile(refresh: boolean = false): Observable<UserInfo | null> {
-    return this.http.get<{ user: any; }>(`${this.apiUrl}/auth/profile`).pipe(
-      map(response => {
+    return this.http.get<{ user: any }>(`${this.apiUrl}/auth/profile`).pipe(
+      map((response) => {
         console.log('Profile response:', response);
 
         // The backend only returns minimal user data
@@ -164,10 +166,10 @@ export class AuthService {
         // Otherwise just return the current user info
         return currentUser;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Get profile failed:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -179,8 +181,8 @@ export class AuthService {
       return of(true);
     }
     return this.initializationComplete$.pipe(
-      filter(completed => completed === true),
-      take(1)
+      filter((completed) => completed === true),
+      take(1),
     );
   }
 
@@ -220,7 +222,6 @@ export class AuthService {
 
     return null;
   }
-
 
   /**
    * Save complete user info to sessionStorage

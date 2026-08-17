@@ -28,10 +28,6 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-# Environment
-src/environments/environment.ts
-src/environments/environment.production.ts
-
 # Miscellaneous
 /.angular/cache
 .sass-cache/
